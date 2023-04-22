@@ -45,3 +45,25 @@
   z-index: 1;
   color: white;
 }
+
+.sliders {
+  margin-top: 1%;
+  .slider {
+    display: flex;
+    align-items: center;
+    label {
+      font-size: 0.75em;
+      margin-right: 2%;
+    }
+  }
+}
+
+.synths,
+.wave-shapes,
+.effects {
+  margin-top:1%;
+  select {
+    font-size: 0.75em;
+    width: 20%;
+  }
+}

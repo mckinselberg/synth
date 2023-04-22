@@ -8,7 +8,7 @@ const Keyboard = ({ keyCodes, activeNotes }) => {
     const keyColor = useMemo(() => keyRegex.test(note) ? `black` : `white`);
     const sharpOrFlat = useMemo(() => noteRegex.test(note) ? ` no-margin` : ``);
     const activeNote = activeNotes[note] ? ` active` : ``;
-    const className = `key ${keyColor} ${sharpOrFlat}${activeNote}`;
+    const className = `key ${keyColor}${sharpOrFlat}${activeNote}`;
     return (
       <div 
         key={note}
@@ -28,10 +28,11 @@ const Keyboard = ({ keyCodes, activeNotes }) => {
     <>
       {Object.keys(keyCodes).map(_note => {
         return (
-        <MemoizedKey 
-          key={_note}
-          note={keyCodes[_note]}
-          activeNotes={activeNotes}/>
+          <MemoizedKey 
+            key={_note}
+            note={keyCodes[_note]}
+            activeNotes={activeNotes}
+          />
         );
       })}
     </>

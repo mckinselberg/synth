@@ -1,12 +1,12 @@
 // @flow
 import "./scss/main.scss";
 import "./scss/piano.scss";
-import Piano from "./components/Piano";
+import Panel from "./components/Panel";
 
 export function App() {
   return (
     <>
-      <Piano/>
+      <Panel/>
     </>
   );
 }
