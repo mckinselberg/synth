@@ -90,10 +90,12 @@ const Panel = () => {
       <div className="dropdowns">
         <div className="synths">
           <select onChange={handleChangeSynth}>
-            {Object.keys(synths).map((synth, idx) => 
-              (<option key={`${synth}_${idx}`} value={synth}>
-                {synths[synth].name}
-              </option>))}
+            {Object.keys(synths).map((synth, idx) => {
+              const name = synths[synth].name;
+              return (<option key={`${synth}_${idx}`} value={synth}>
+                {name}
+              </option>)}
+            )}
           </select>
         </div>
         <div className="wave-shapes">

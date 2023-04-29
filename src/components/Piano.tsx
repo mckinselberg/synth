@@ -31,7 +31,9 @@ const Piano = ({polySynth}) => {
 
   const availableKeys = Object.keys(keyCodes);
   const [activeNotes, setActiveNotes] = useState({});
-  const [toneStarted, setToneStarted] = useState(false)
+  const [toneStarted, setToneStarted] = useState(false);
+  const [mouseDown, setMouseDown] = useState(false);
+  const [clickedNote, setClickedNote] = useState(null);
  
   const playNote = (e) => {
 
@@ -72,10 +74,51 @@ const Piano = ({polySynth}) => {
     }
   });
   
+  const handleMouseDown = (note) => {
+    console.log(mouseDown);
+    console.log(clickedNote);
+    setMouseDown(true);
+    setClickedNote(note);
+    if (!activeNotes[note]) {
+      polySynth.current.triggerAttack(note);
+      const tempActiveNotes = {...activeNotes}
+      tempActiveNotes[note] = true;
+      setActiveNotes(tempActiveNotes);
+    }
+  }
+
+  const handleMouseUp = (note) => {
+    console.log(mouseDown);
+    console.log(clickedNote);
+    setMouseDown(false);
+    setClickedNote(null);
+    const now = Tone.now();
+    polySynth.current.triggerRelease(note, now);
+    const tempActiveNotes = {...activeNotes}
+    tempActiveNotes[note] = false;
+    setActiveNotes(tempActiveNotes);
+  }
+
+  const handleMouseEnter = (e, note) => {
+    console.log(note);
+    console.log(e);
+  }
+
+  const handleMouseLeave = (e, note) => {
+    console.log(note);
+    console.log(e);
+  }
 
   return (
     <div id="piano">
-      <Keyboard keyCodes={keyCodes} activeNotes={activeNotes} />
+      <Keyboard
+        keyCodes={keyCodes}
+        activeNotes={activeNotes}
+        handleMouseDown={handleMouseDown}
+        handleMouseUp={handleMouseUp}
+        handleMouseEnter={handleMouseEnter}
+        handleMouseLeave={handleMouseLeave}
+      />
     </div>
   );
 }

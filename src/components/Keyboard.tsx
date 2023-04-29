@@ -2,9 +2,9 @@ import React, { useMemo } from 'react';
 const keyRegex = /([#])/;
 const noteRegex = /(C\B)|(F\B)/;
 
-const Keyboard = ({ keyCodes, activeNotes }) => {
+const Keyboard = ({ keyCodes, activeNotes, handleMouseDown, handleMouseUp, handleMouseEnter, handleMouseLeave }) => {
 
-  const Key = ({note,keyboardKey,  activeNotes}) => {
+  const Key = ({note, keyboardKey, activeNotes}) => {
     const keyColor = useMemo(() => keyRegex.test(note) ? `black` : `white`);
     const sharpOrFlat = useMemo(() => noteRegex.test(note) ? ` no-margin` : ``);
     const activeNote = activeNotes[note] ? ` active` : ``;
@@ -14,10 +14,14 @@ const Keyboard = ({ keyCodes, activeNotes }) => {
         key={note}
         className={className}
         data-note={note}
+        onMouseDown={() => handleMouseDown(note)}
+        onMouseUp={() => handleMouseUp(note)}
+        onMouseEnter={(e) => handleMouseEnter(e, note)}
+        onMouseLeave={(e) => handleMouseLeave(e, note)}
       >
         <span>
-          <p>{keyboardKey}</p>
           <p>{note}</p>
+          <p>{keyboardKey}</p>
         </span>
       </div>
     );
