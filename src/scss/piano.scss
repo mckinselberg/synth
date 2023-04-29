@@ -1,19 +1,20 @@
 #piano {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   width: 100%;
   background-color: #eee;
   border: 1px solid #999;
   padding-left:30px;
   display:flex;
   justify-content: flex-start;
+  padding: 1em;
 }
 
 .key {
   width: 50px;
   height: 150px;
   box-sizing: border-box;
-  border: 1px solid #aaa;
+  border: 1px solid #cecece;
   border-radius: 5px;
   cursor: pointer;
   position: relative;
@@ -27,13 +28,26 @@
     margin-left:0;
   }
   &.active {
-    background-color: lightgrey;
+    // background-color: lightgrey;
+    // box-shadow: inset rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    box-shadow: rgba(240, 46, 170, 0.4) 0px 5px, rgba(240, 46, 170, 0.3) 0px 10px, rgba(240, 46, 170, 0.2) 0px 15px, rgba(240, 46, 170, 0.1) 0px 20px, rgba(240, 46, 170, 0.05) 0px 25px;
   }
   span {
     text-align: center;
     width:100%;
     font-size: 0.75em;
-
+    p {
+      margin: 0;
+      &:first-of-type {
+        color:gray;
+        font-size: .85em;
+        margin-bottom: .3em;
+      }
+      &:last-of-type {
+        font-size: .95em;
+        margin-bottom: 1em;
+      }
+    }
   }
 }
 
@@ -44,6 +58,10 @@
   margin-left: -15px;
   z-index: 1;
   color: white;
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 2px 5px;
+  &.active {
+    background-color: lightslategray;
+  }
 }
 
 .sliders {
@@ -58,12 +76,16 @@
   }
 }
 
-.synths,
-.wave-shapes,
-.effects {
-  margin-top:1%;
-  select {
-    font-size: 0.75em;
+.dropdowns {
+  display: flex;
+  .synths,
+  .wave-shapes,
+  .effects {
     width: 20%;
+    padding: .5em;
+    select {
+      font-size: 0.75em;
+      width: 100%;
+    }
   }
 }

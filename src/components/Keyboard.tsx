@@ -4,7 +4,7 @@ const noteRegex = /(C\B)|(F\B)/;
 
 const Keyboard = ({ keyCodes, activeNotes }) => {
 
-  const Key = ({note, activeNotes}) => {
+  const Key = ({note,keyboardKey,  activeNotes}) => {
     const keyColor = useMemo(() => keyRegex.test(note) ? `black` : `white`);
     const sharpOrFlat = useMemo(() => noteRegex.test(note) ? ` no-margin` : ``);
     const activeNote = activeNotes[note] ? ` active` : ``;
@@ -16,7 +16,8 @@ const Keyboard = ({ keyCodes, activeNotes }) => {
         data-note={note}
       >
         <span>
-          {note}
+          <p>{keyboardKey}</p>
+          <p>{note}</p>
         </span>
       </div>
     );
@@ -31,6 +32,7 @@ const Keyboard = ({ keyCodes, activeNotes }) => {
           <MemoizedKey 
             key={_note}
             note={keyCodes[_note]}
+            keyboardKey={_note}
             activeNotes={activeNotes}
           />
         );
