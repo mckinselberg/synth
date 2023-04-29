@@ -1,0 +1,24 @@
+{
+  "name": "parcel",
+  "version": "1.0.0",
+  "license": "MIT",
+  "browserslist": "> 0.5%, last 2 versions, not dead",
+  "devDependencies": {
+    "@babel/core": "^7.12.0",
+    "@babel/plugin-transform-flow-strip-types": "^7.0.0",
+    "@parcel/transformer-sass": "2.8.3",
+    "flow-bin": "^0.199.1",
+    "node-sass": "^8.0.0",
+    "parcel": "^2.8.3",
+    "process": "^0.11.10"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "tone": "^14.7.77"
+  },
+  "scripts": {
+    "start": "parcel src/index.html",
+    "build": "parcel build"
+  }
+}
