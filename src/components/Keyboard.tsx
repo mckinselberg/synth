@@ -12,6 +12,7 @@ const Keyboard = ({ keyCodes, activeNotes, handleMouseDown, handleMouseUp, handl
     return (
       <div 
         key={note}
+        data-key={note}
         className={className}
         data-note={note}
         onMouseDown={() => handleMouseDown(note)}

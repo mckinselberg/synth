@@ -39,6 +39,12 @@ const Panel = () => {
     autoFilter: new Tone.AutoFilter("4n").toDestination(),
     autoWah: new Tone.AutoWah(50, 6, -30).toDestination(),
     crusher: new Tone.BitCrusher(4).toDestination(),
+    cheby: new Tone.Chebyshev(2).toDestination(),
+    phaser: new Tone.Phaser({
+      frequency: 15,
+      octaves: 5,
+      baseFrequency: 1000
+    }).toDestination(),
   }
   const [effect, setEffect] = useState('none');
   const handleEffectChange = (e) => {
@@ -76,7 +82,8 @@ const Panel = () => {
     polySynth.current.debug = debug;
     if (effect !== 'none') polySynth.current.connect(effects[effect]);
     if (effect === 'autoWah') effects[effect].Q.value = 6;
-    // const eq = new Tone.EQ3(eqVals.lowLevel, eqVals.midLevel, eqVals.highLevel);
+    const eq = new Tone.EQ3(eqVals.lowLevel, eqVals.midLevel, eqVals.highLevel);
+    polySynth.current.connect(eq);
     return () => {
       polySynth.current.dispose();
       Object.keys(effects).forEach(effect => effects[effect].dispose());
@@ -92,9 +99,7 @@ const Panel = () => {
           <select onChange={handleChangeSynth}>
             {Object.keys(synths).map((synth, idx) => {
               const name = synths[synth].name;
-              return (<option key={`${synth}_${idx}`} value={synth}>
-                {name}
-              </option>)}
+              return (<option key={`${synth}_${idx}`} value={synth}>{name}</option>)}
             )}
           </select>
         </div>

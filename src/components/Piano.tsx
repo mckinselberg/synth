@@ -2,6 +2,8 @@ import * as Tone from 'tone';
 import React, { useState, useEffect } from 'react';
 import Keyboard from './Keyboard';
 
+const debug = false;
+
 const Piano = ({polySynth}) => {
   // keyboard to note mappings
   // convert this to an array or a map to preserve order
@@ -75,8 +77,10 @@ const Piano = ({polySynth}) => {
   });
   
   const handleMouseDown = (note) => {
-    console.log(mouseDown);
-    console.log(clickedNote);
+    if(debug) {
+      console.log(mouseDown);
+      console.log(clickedNote);
+    }
     setMouseDown(true);
     setClickedNote(note);
     if (!activeNotes[note]) {
@@ -88,8 +92,10 @@ const Piano = ({polySynth}) => {
   }
 
   const handleMouseUp = (note) => {
-    console.log(mouseDown);
-    console.log(clickedNote);
+    if(debug) {
+      console.log(mouseDown);
+      console.log(clickedNote);
+    }
     setMouseDown(false);
     setClickedNote(null);
     const now = Tone.now();
@@ -100,13 +106,17 @@ const Piano = ({polySynth}) => {
   }
 
   const handleMouseEnter = (e, note) => {
-    console.log(note);
-    console.log(e);
+    if(debug) {
+      console.log(note);
+      console.log(e);
+    }
   }
 
   const handleMouseLeave = (e, note) => {
-    console.log(note);
-    console.log(e);
+    if(debug) {
+      console.log(note);
+      console.log(e);
+    }
   }
 
   return (
