@@ -98,8 +98,7 @@ const Panel = () => {
         <div className="synths">
           <select onChange={handleChangeSynth}>
             {Object.keys(synths).map((synth, idx) => {
-              const name = synths[synth].name;
-              return (<option key={`${synth}_${idx}`} value={synth}>{name}</option>)}
+              return (<option key={`${synth}_${idx}`} value={(synth)}>{synth}</option>)}
             )}
           </select>
         </div>
