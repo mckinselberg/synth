@@ -67,12 +67,20 @@
 .sliders {
   margin-top: 1%;
   padding: .5em;
+  & > div {
+    display: flex;
+    align-items: center;
+    div:last-of-type {
+      font-size: .5em;
+    }
+  }
   .slider {
     display: flex;
     align-items: center;
     label {
       font-size: 0.75em;
       margin-right: 2%;
+      width: 75px;
     }
   }
 }

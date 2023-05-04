@@ -4,6 +4,7 @@ import Piano from "./Piano";
 import Slider from './Slider';
 
 const debug = false;
+const log = false;
 
 const Panel = () => {
   const polySynth = useRef();
@@ -14,6 +15,7 @@ const Panel = () => {
     monoSynth: Tone.MonoSynth,
     pluckSynth: Tone.PluckSynth,
     membraneSynth: Tone.MembraneSynth,
+    metalSynth: Tone.MetalSynth,
   };
 
   const activeSynth = useRef(synths.synth);
@@ -33,18 +35,18 @@ const Panel = () => {
   const handleWaveShapeChange = (e) => {
     setWaveShape(e.target.value);
   }
-
+  
   const effects = {
-    pingPong: new Tone.PingPongDelay("8n", 0.1).toDestination(),
-    autoFilter: new Tone.AutoFilter("4n").toDestination(),
-    autoWah: new Tone.AutoWah(50, 6, -30).toDestination(),
-    crusher: new Tone.BitCrusher(4).toDestination(),
-    cheby: new Tone.Chebyshev(2).toDestination(),
+    pingPong: new Tone.PingPongDelay("8n", 0.1),
+    autoFilter: new Tone.AutoFilter("4n"),
+    autoWah: new Tone.AutoWah(50, 6, -30),
+    crusher: new Tone.BitCrusher(4),
+    cheby: new Tone.Chebyshev(2),
     phaser: new Tone.Phaser({
       frequency: 15,
       octaves: 5,
       baseFrequency: 1000
-    }).toDestination(),
+    }),
   }
   const [effect, setEffect] = useState('none');
   const handleEffectChange = (e) => {
@@ -72,22 +74,26 @@ const Panel = () => {
     polySynth.current = new Tone.PolySynth(activeSynth.current, {
         oscillator: {
           type: waveShape,
+          phase: 0,
         },
         envelope: {
           attack: attack,
           release: release,
         },
-    }).toDestination();
+    });
     polySynth.current.maxPolyphony = 10;
     polySynth.current.debug = debug;
-    if (effect !== 'none') polySynth.current.connect(effects[effect]);
     if (effect === 'autoWah') effects[effect].Q.value = 6;
-    const eq = new Tone.EQ3(eqVals.lowLevel, eqVals.midLevel, eqVals.highLevel);
-    polySynth.current.connect(eq);
+    const eq = new Tone.EQ3({
+      low: eqVals.lowLevel,
+      mid: eqVals.midLevel,
+      high: eqVals.highLevel
+    });
+    effect === 'none' ? polySynth.current.chain(eq, Tone.Destination) : polySynth.current.chain(effects[effect], eq, Tone.Destination);
     return () => {
-      polySynth.current.dispose();
       Object.keys(effects).forEach(effect => effects[effect].dispose());
-      // eq.dispose();
+      eq.dispose();
+      polySynth.current.dispose();
     }
   }, [activeSynth.current, attack, release, waveShape, effect, eqVals]);
 
@@ -121,9 +127,18 @@ const Panel = () => {
       <div className="sliders">
         <Slider handleChange={handleAttackChange} value={attack} step="0.01" name="Attack" />
         <Slider handleChange={handleReleaseChange} value={release} step="0.01" name="Release" />
-        <Slider handleChange={(e) => handleEqChange(e, 'low')} value={eqVals.lowLevel} step="0.01" name="Low" />
-        <Slider handleChange={(e) => handleEqChange(e, 'mid')} value={eqVals.midLevel} step="0.01" name="Mid" />
-        <Slider handleChange={(e) => handleEqChange(e, 'high')} value={eqVals.highLevel} step="0.01" name="High" />
+        <div>
+          <Slider handleChange={(e) => handleEqChange(e, 'low')} value={eqVals.lowLevel} step="0.01" name="Low" range={[-20,20]} />
+          <div>{eqVals.lowLevel}</div>
+        </div>
+        <div>
+          <Slider handleChange={(e) => handleEqChange(e, 'mid')} value={eqVals.midLevel} step="0.01" name="Mid" range={[-20,20]} />
+          <div>{eqVals.midLevel}</div>
+        </div>
+        <div>
+          <Slider handleChange={(e) => handleEqChange(e, 'high')} value={eqVals.highLevel} step="0.01" name="High" range={[-20,20]} />
+          <div>{eqVals.highLevel}</div>
+        </div>
       </div>
     </div>
   )
