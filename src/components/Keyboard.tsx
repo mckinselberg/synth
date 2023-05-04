@@ -28,6 +28,8 @@ const Keyboard = ({ keyCodes, activeNotes, handleMouseDown, handleMouseUp, handl
         data-note={note}
         onMouseDown={() => handleMouseDown(note)}
         onMouseUp={() => handleMouseUp(note)}
+        onTouchStart={() => handleMouseDown(note)}
+        onTouchEnd={() => handleMouseUp(note)}
         onMouseEnter={(e) => handleMouseEnter(e, note)}
         onMouseLeave={(e) => handleMouseLeave(e, note)}
       >
@@ -38,8 +40,6 @@ const Keyboard = ({ keyCodes, activeNotes, handleMouseDown, handleMouseUp, handl
       </div>
     );
   }
-
-  // const MemoizedKey = React.memo((props: IKeyProps) => <Key {...props}/>);
 
   return (
     <>
