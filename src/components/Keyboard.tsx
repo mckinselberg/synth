@@ -2,9 +2,20 @@ import React, { useMemo } from 'react';
 const keyRegex = /([#])/;
 const noteRegex = /(C\B)|(F\B)/;
 
+interface IKeyProps {
+  note: string,
+  keyboardKey: string,
+  activeNotes: object
+}
+
+interface IKeyCodeMap {
+  [key: string]: string
+}
+
 const Keyboard = ({ keyCodes, activeNotes, handleMouseDown, handleMouseUp, handleMouseEnter, handleMouseLeave }) => {
 
-  const Key = ({note, keyboardKey, activeNotes}) => {
+
+  const Key = ({note, keyboardKey, activeNotes}: IKeyProps ):HTMLElement => {
     const keyColor = useMemo(() => keyRegex.test(note) ? `black` : `white`);
     const sharpOrFlat = useMemo(() => noteRegex.test(note) ? ` no-margin` : ``);
     const activeNote = activeNotes[note] ? ` active` : ``;
@@ -28,16 +39,18 @@ const Keyboard = ({ keyCodes, activeNotes, handleMouseDown, handleMouseUp, handl
     );
   }
 
-  const MemoizedKey = React.memo((props) => <Key {...props}/>)
+  // const MemoizedKey = React.memo((props: IKeyProps) => <Key {...props}/>);
 
   return (
     <>
-      {Object.keys(keyCodes).map(_note => {
+      {Array.from(keyCodes).map((keyCode: Array<string>) => {
+        const note = keyCode[1];
+        const keyboardKey = keyCode[0];
         return (
-          <MemoizedKey 
-            key={_note}
-            note={keyCodes[_note]}
-            keyboardKey={_note}
+          <Key 
+            key={`${note}${keyboardKey}`}
+            note={note}
+            keyboardKey={keyboardKey}
             activeNotes={activeNotes}
           />
         );

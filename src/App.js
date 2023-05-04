@@ -4,9 +4,5 @@ import "./scss/piano.scss";
 import Panel from "./components/Panel";
 
 export function App() {
-  return (
-    <>
-      <Panel/>
-    </>
-  );
+  return <Panel/>;
 }
