@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import * as Tone from 'tone';
-import Piano from "./Piano";
+import Synth from "./Synth";
 import Slider from './Slider';
 
 const debug = false;
@@ -99,7 +99,7 @@ const Panel = () => {
 
   return (
     <div>
-      <Piano polySynth={polySynth} />
+      <Synth polySynth={polySynth} />
       <div className="dropdowns">
         <div className="synths">
           <select onChange={handleChangeSynth}>

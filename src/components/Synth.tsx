@@ -3,8 +3,9 @@ import React, { useState, useEffect } from 'react';
 import Keyboard from './Keyboard';
 
 const debug = false;
+const log = true;
 
-const Piano = ({polySynth}) => {
+const Synth = ({polySynth}) => {
   // keyboard to note mappings
 
   const keyCodesMap = new Map();
@@ -30,7 +31,6 @@ const Piano = ({polySynth}) => {
   keyCodesMap.set("w", "G5");
   keyCodesMap.set("3", "G#5");
   keyCodesMap.set("e", "A5");
-
 
   const availableKeys = Array.from(keyCodesMap.keys());
   const [activeNotes, setActiveNotes] = useState({});
@@ -78,11 +78,13 @@ const Piano = ({polySynth}) => {
     }
   });
   
-  const handleMouseDown = (note) => {
-    if(debug) {
+  const handleMouseDown = (e, note) => {
+    if(log) {
+      console.log(e);
       console.log(mouseDown);
       console.log(clickedNote);
     }
+    e.preventDefault();
     setMouseDown(true);
     setClickedNote(note);
     if (!activeNotes[note]) {
@@ -93,11 +95,13 @@ const Piano = ({polySynth}) => {
     }
   }
 
-  const handleMouseUp = (note) => {
-    if(debug) {
+  const handleMouseUp = (e, note) => {
+    if(log) {
+      console.log(e);
       console.log(mouseDown);
       console.log(clickedNote);
     }
+    e.preventDefault();
     setMouseDown(false);
     setClickedNote(null);
     const now = Tone.now();
@@ -108,21 +112,23 @@ const Piano = ({polySynth}) => {
   }
 
   const handleMouseEnter = (e, note) => {
-    if(debug) {
+    e.preventDefault();
+    if(log) {
       console.log(note);
       console.log(e);
     }
   }
 
   const handleMouseLeave = (e, note) => {
-    if(debug) {
+    e.preventDefault();
+    if(log) {
       console.log(note);
       console.log(e);
     }
   }
 
   return (
-    <div id="piano">
+    <div id="synth">
       <Keyboard
         keyCodes={keyCodesMap}
         activeNotes={activeNotes}
@@ -135,4 +141,4 @@ const Piano = ({polySynth}) => {
   );
 }
 
-export default Piano;
+export default Synth;

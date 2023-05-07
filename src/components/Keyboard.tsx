@@ -12,10 +12,16 @@ interface IKeyCodeMap {
   [key: string]: string
 }
 
-const Keyboard = ({ keyCodes, activeNotes, handleMouseDown, handleMouseUp, handleMouseEnter, handleMouseLeave }) => {
+const Keyboard = ({
+  keyCodes,
+  activeNotes,
+  handleMouseDown,
+  handleMouseUp,
+  handleMouseEnter,
+  handleMouseLeave
+}) => {
 
-
-  const Key = ({note, keyboardKey, activeNotes}: IKeyProps ):HTMLElement => {
+  const Key = ({note, keyboardKey, activeNotes}: IKeyProps ) => {
     const keyColor = useMemo(() => keyRegex.test(note) ? `black` : `white`);
     const sharpOrFlat = useMemo(() => noteRegex.test(note) ? ` no-margin` : ``);
     const activeNote = activeNotes[note] ? ` active` : ``;
@@ -26,10 +32,10 @@ const Keyboard = ({ keyCodes, activeNotes, handleMouseDown, handleMouseUp, handl
         data-key={note}
         className={className}
         data-note={note}
-        onMouseDown={() => handleMouseDown(note)}
-        onMouseUp={() => handleMouseUp(note)}
-        onTouchStart={() => handleMouseDown(note)}
-        onTouchEnd={() => handleMouseUp(note)}
+        onMouseDown={(e) => handleMouseDown(e, note)}
+        onMouseUp={(e) => handleMouseUp(e, note)}
+        onTouchStart={(e) => handleMouseDown(e, note)}
+        onTouchEnd={(e) => handleMouseUp(e, note)}
         onMouseEnter={(e) => handleMouseEnter(e, note)}
         onMouseLeave={(e) => handleMouseLeave(e, note)}
       >
@@ -43,7 +49,7 @@ const Keyboard = ({ keyCodes, activeNotes, handleMouseDown, handleMouseUp, handl
 
   return (
     <>
-      {Array.from(keyCodes).map((keyCode: Array<string>) => {
+      {Array.from(keyCodes).map((keyCode: Array<any>) => {
         const note = keyCode[1];
         const keyboardKey = keyCode[0];
         return (
