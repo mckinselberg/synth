@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import Keyboard from './Keyboard';
 
 const debug = false;
-const log = false;
+const log = true;
 // keyboard to note mappings
 
 const keyCodesMap = new Map();
@@ -30,9 +30,10 @@ keyCodesMap.set("w", "G5");
 keyCodesMap.set("3", "G#5");
 keyCodesMap.set("e", "A5");
 
+const availableKeys = Array.from(keyCodesMap.keys());
+
 const Synth = ({polySynth}) => {
 
-  const availableKeys = Array.from(keyCodesMap.keys());
   const [activeNotes, setActiveNotes] = useState({});
   const [toneStarted, setToneStarted] = useState(false);
   const [mouseDown, setMouseDown] = useState(false);
