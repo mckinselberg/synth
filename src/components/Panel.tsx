@@ -3,8 +3,7 @@ import * as Tone from 'tone';
 import Synth from "./Synth";
 import Slider from './Slider';
 
-const debug = false;
-const log = false;
+const debug = true;
 
 const Panel = () => {
   const polySynth = useRef();
@@ -36,21 +35,35 @@ const Panel = () => {
     setWaveShape(e.target.value);
   }
   
-  const effects = {
-    pingPong: new Tone.PingPongDelay("8n", 0.1),
-    autoFilter: new Tone.AutoFilter("4n"),
-    autoWah: new Tone.AutoWah(50, 6, -30),
-    crusher: new Tone.BitCrusher(4),
-    cheby: new Tone.Chebyshev(2),
-    phaser: new Tone.Phaser({
-      frequency: 15,
-      octaves: 5,
-      baseFrequency: 1000
-    }),
-  }
-  const [effect, setEffect] = useState('none');
-  const handleEffectChange = (e) => {
-    setEffect(e.target.value);
+  const availableEffects = [
+    'pingPong',
+    'autoFilter',
+    'autoWah',
+    'crusher',
+    'cheby',
+    'phaser',
+  ];
+  const [effects, setEffects] = useState(new Array());
+  // const handleEffectChange = (e) => {
+  //   // console.log(e.target.checked);
+  //   let tempEffects = [...effects];
+  //   if (e.target.checked) {
+  //     tempEffects.push(availableEffects[e.target.value])
+  //   } else {
+  //     tempEffects.splice(tempEffects.indexOf(availableEffects[e.target.value], 1));
+  //   }
+
+  //   setEffects(tempEffects);
+  // }
+
+  const handleEffectsChange = (e) => {
+    const tempEffects = [...effects]
+    if (e.target.checked) {
+      tempEffects.push(e.target.value);
+    } else {
+      tempEffects.splice(tempEffects.indexOf(e.target.value), 1);
+    }
+    setEffects(tempEffects);
   }
   
   const [attack, setAttack] = useState(0);
@@ -70,7 +83,23 @@ const Panel = () => {
     setEqVals(tempEqVals);
   }
 
+  const destination = useRef(Tone.Destination);
+  const eq = useRef();
+  const availableEffectsRef = useRef();
+
   useEffect(() => {
+    availableEffectsRef.current = {
+      pingPong: new Tone.PingPongDelay("8n", 0.1),
+      autoFilter: new Tone.AutoFilter("4n"),
+      autoWah: new Tone.AutoWah(50, 6, -30),
+      crusher: new Tone.BitCrusher(4),
+      cheby: new Tone.Chebyshev(2),
+      phaser: new Tone.Phaser({
+        frequency: 15,
+        octaves: 5,
+        baseFrequency: 1000
+      }),
+    }
     polySynth.current = new Tone.PolySynth(activeSynth.current, {
         oscillator: {
           type: waveShape,
@@ -83,19 +112,33 @@ const Panel = () => {
     });
     polySynth.current.maxPolyphony = 10;
     polySynth.current.debug = debug;
-    if (effect === 'autoWah') effects[effect].Q.value = 6;
-    const eq = new Tone.EQ3({
+    eq.current = new Tone.EQ3({
       low: eqVals.lowLevel,
       mid: eqVals.midLevel,
       high: eqVals.highLevel
     });
-    effect === 'none' ? polySynth.current.chain(eq, Tone.Destination) : polySynth.current.chain(effects[effect], eq, Tone.Destination);
+    eq.current.debug = debug;
+    const actualEffects = effects.map(effect => {
+      return availableEffectsRef.current[effect];
+    });
+
+    polySynth.current.chain(...actualEffects, eq.current, destination.current);
+    
     return () => {
-      Object.keys(effects).forEach(effect => effects[effect].dispose());
-      eq.dispose();
+      actualEffects.forEach(effect => {
+        effect.disconnect(polySynth.current);
+      });
+      Object.keys(availableEffectsRef.current).map(effect => {
+        availableEffectsRef.current[effect].dispose();
+      });
+      eq.current.dispose();
+      eq.current = null;
       polySynth.current.dispose();
+      polySynth.current = null;
     }
-  }, [activeSynth.current, attack, release, waveShape, effect, eqVals]);
+  }, [activeSynthName, attack, release, waveShape, effects, eqVals]);
+
+  const checkboxRefs = useRef(availableEffects);
 
   return (
     <div>
@@ -116,12 +159,20 @@ const Panel = () => {
           </select>
         </div>
         <div className="effects">
-          <select onChange={handleEffectChange}>
+          {/* <select onChange={handleEffectChange}>
             <option value="none">none</option>
             {Object.keys(effects).map((effect, idx) => {
               return <option key={`${effect}_${idx}`} value={effect}>{effect}</option>
             })}
-          </select>
+          </select> */}
+          {availableEffects.map((effect, idx) => {
+            return (
+              <div key={`${effect}_${idx}`}>
+                <input type="checkbox" id={effect} name="effect" value={effect} onChange={handleEffectsChange} />
+                <label htmlFor={effect}>{effect}</label>
+              </div>
+            )
+          })}
         </div>
       </div>
       <div className="sliders">

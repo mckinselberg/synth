@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import Keyboard from './Keyboard';
 
 const debug = false;
-const log = true;
 // keyboard to note mappings
 
 const keyCodesMap = new Map();
@@ -37,7 +36,7 @@ const Synth = ({polySynth}) => {
   const [activeNotes, setActiveNotes] = useState({});
   const [toneStarted, setToneStarted] = useState(false);
   const [mouseDown, setMouseDown] = useState(false);
-  const [clickedNote, setClickedNote] = useState(null);
+  // const [clickedNote, setClickedNote] = useState(null);
  
   const playNote = (e) => {
 
@@ -58,7 +57,6 @@ const Synth = ({polySynth}) => {
       tempActiveNotes[keyCodesMap.get(e.key)] = true;
       setActiveNotes(tempActiveNotes);
     }
-    e.preventDefault();
   }
 
   const endNote = (e) => {
@@ -80,14 +78,9 @@ const Synth = ({polySynth}) => {
   });
   
   const handleMouseDown = (e, note) => {
-    if(log) {
-      console.log(e);
-      console.log(mouseDown);
-      console.log(clickedNote);
-    }
     e.preventDefault();
     setMouseDown(true);
-    setClickedNote(note);
+    // setClickedNote(note);
     if (!activeNotes[note]) {
       polySynth.current.triggerAttack(note);
       const tempActiveNotes = {...activeNotes}
@@ -97,14 +90,9 @@ const Synth = ({polySynth}) => {
   }
 
   const handleMouseUp = (e, note) => {
-    if(log) {
-      console.log(e);
-      console.log(mouseDown);
-      console.log(clickedNote);
-    }
     e.preventDefault();
     setMouseDown(false);
-    setClickedNote(null);
+    // setClickedNote(null);
     const now = Tone.now();
     polySynth.current.triggerRelease(note, now);
     const tempActiveNotes = {...activeNotes}
@@ -114,18 +102,26 @@ const Synth = ({polySynth}) => {
 
   const handleMouseEnter = (e, note) => {
     e.preventDefault();
-    if(log) {
-      console.log(note);
-      console.log(e);
+    if (!mouseDown) return;
+    setMouseDown(true);
+    // setClickedNote(note);
+    if (!activeNotes[note]) {
+      polySynth.current.triggerAttack(note);
+      const tempActiveNotes = {...activeNotes}
+      tempActiveNotes[note] = true;
+      setActiveNotes(tempActiveNotes);
     }
   }
 
   const handleMouseLeave = (e, note) => {
     e.preventDefault();
-    if(log) {
-      console.log(note);
-      console.log(e);
-    }
+    if (!mouseDown) return;
+    // setClickedNote(null);
+    const now = Tone.now();
+    polySynth.current.triggerRelease(note, now);
+    const tempActiveNotes = {...activeNotes}
+    tempActiveNotes[note] = false;
+    setActiveNotes(tempActiveNotes);
   }
 
   return (
