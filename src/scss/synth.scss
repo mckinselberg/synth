@@ -63,38 +63,3 @@
     background-color: lightslategray;
   }
 }
-
-.sliders {
-  margin-top: 1%;
-  padding: .5em;
-  & > div {
-    display: flex;
-    align-items: center;
-    div:last-of-type {
-      font-size: .5em;
-    }
-  }
-  .slider {
-    display: flex;
-    align-items: center;
-    label {
-      font-size: 0.75em;
-      margin-right: 2%;
-      width: 75px;
-    }
-  }
-}
-
-.dropdowns {
-  display: flex;
-  .synths,
-  .wave-shapes,
-  .effects {
-    width: 20%;
-    padding: .5em;
-    select {
-      font-size: 0.75em;
-      width: 100%;
-    }
-  }
-}

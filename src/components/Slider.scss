@@ -1,0 +1,10 @@
+.slider {
+  display: flex;
+  align-items: center;
+  label {
+    width: 12.5%;
+  }
+  div:last-of-type {
+    font-size: .5em;
+  }
+}

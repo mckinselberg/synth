@@ -2,8 +2,10 @@ import React, { useRef, useState, useEffect } from 'react';
 import * as Tone from 'tone';
 import Synth from "./Synth";
 import Slider from './Slider';
+import Effect from './Effect';
+import { availableEffectsWithParams as avp } from '../utils/availableEffectsWithParams';
 
-const debug = true;
+const debug = false;
 
 const Panel = () => {
   const polySynth = useRef();
@@ -29,12 +31,13 @@ const Panel = () => {
     'sine',
     'sawtooth',
     'triangle',
-  ];
+  ];  
   const [waveShape, setWaveShape] = useState(waveShapes[0]);
   const handleWaveShapeChange = (e) => {
     setWaveShape(e.target.value);
   }
-  
+
+  const availableEffectsRef = useRef();
   const availableEffects = [
     'pingPong',
     'autoFilter',
@@ -43,19 +46,8 @@ const Panel = () => {
     'cheby',
     'phaser',
   ];
-  const [effects, setEffects] = useState(new Array());
-  // const handleEffectChange = (e) => {
-  //   // console.log(e.target.checked);
-  //   let tempEffects = [...effects];
-  //   if (e.target.checked) {
-  //     tempEffects.push(availableEffects[e.target.value])
-  //   } else {
-  //     tempEffects.splice(tempEffects.indexOf(availableEffects[e.target.value], 1));
-  //   }
 
-  //   setEffects(tempEffects);
-  // }
-
+  const [effects, setEffects] = useState([]);
   const handleEffectsChange = (e) => {
     const tempEffects = [...effects]
     if (e.target.checked) {
@@ -76,6 +68,7 @@ const Panel = () => {
     setRelease(e.target.value);
   }
 
+  const eq = useRef();
   const [eqVals, setEqVals] = useState({lowLevel: 0, midLevel: 0, highLevel: 0})
   const handleEqChange = (e, band) => {
     const tempEqVals = {...eqVals};
@@ -84,22 +77,8 @@ const Panel = () => {
   }
 
   const destination = useRef(Tone.Destination);
-  const eq = useRef();
-  const availableEffectsRef = useRef();
 
   useEffect(() => {
-    availableEffectsRef.current = {
-      pingPong: new Tone.PingPongDelay("8n", 0.1),
-      autoFilter: new Tone.AutoFilter("4n"),
-      autoWah: new Tone.AutoWah(50, 6, -30),
-      crusher: new Tone.BitCrusher(4),
-      cheby: new Tone.Chebyshev(2),
-      phaser: new Tone.Phaser({
-        frequency: 15,
-        octaves: 5,
-        baseFrequency: 1000
-      }),
-    }
     polySynth.current = new Tone.PolySynth(activeSynth.current, {
         oscillator: {
           type: waveShape,
@@ -116,16 +95,27 @@ const Panel = () => {
       low: eqVals.lowLevel,
       mid: eqVals.midLevel,
       high: eqVals.highLevel
-    });
-    eq.current.debug = debug;
-    const actualEffects = effects.map(effect => {
+    });    
+    availableEffectsRef.current = {
+      pingPong: new Tone.PingPongDelay(avp.pingPong.delayTime.value, avp.pingPong.maxDelay.value),
+      autoFilter: new Tone.AutoFilter("4n"),
+      autoWah: new Tone.AutoWah(50, 6, -30),
+      crusher: new Tone.BitCrusher(4),
+      cheby: new Tone.Chebyshev(2),
+      phaser: new Tone.Phaser({
+        frequency: 15,
+        octaves: 5,
+        baseFrequency: 1000
+      }),
+    }
+    const appliedEffects = effects.map(effect => {
       return availableEffectsRef.current[effect];
     });
 
-    polySynth.current.chain(...actualEffects, eq.current, destination.current);
+    polySynth.current.chain(...appliedEffects, eq.current, destination.current);
     
     return () => {
-      actualEffects.forEach(effect => {
+      appliedEffects.forEach(effect => {
         effect.disconnect(polySynth.current);
       });
       Object.keys(availableEffectsRef.current).map(effect => {
@@ -137,8 +127,6 @@ const Panel = () => {
       polySynth.current = null;
     }
   }, [activeSynthName, attack, release, waveShape, effects, eqVals]);
-
-  const checkboxRefs = useRef(availableEffects);
 
   return (
     <div>
@@ -158,38 +146,56 @@ const Panel = () => {
             })}
           </select>
         </div>
+      </div>
+      <div className="checkboxes">
         <div className="effects">
-          {/* <select onChange={handleEffectChange}>
-            <option value="none">none</option>
-            {Object.keys(effects).map((effect, idx) => {
-              return <option key={`${effect}_${idx}`} value={effect}>{effect}</option>
-            })}
-          </select> */}
           {availableEffects.map((effect, idx) => {
-            return (
-              <div key={`${effect}_${idx}`}>
-                <input type="checkbox" id={effect} name="effect" value={effect} onChange={handleEffectsChange} />
-                <label htmlFor={effect}>{effect}</label>
-              </div>
-            )
-          })}
+            return effect !== 'pingPong' ? null : (
+              <Effect 
+                key={`${effect}_${idx}`}
+                effect={effect}
+                idx={idx}
+                handleEffectsChange={handleEffectsChange}
+                params={avp[effect]}
+              />
+            )}
+          )}
         </div>
       </div>
       <div className="sliders">
-        <Slider handleChange={handleAttackChange} value={attack} step="0.01" name="Attack" />
-        <Slider handleChange={handleReleaseChange} value={release} step="0.01" name="Release" />
-        <div>
-          <Slider handleChange={(e) => handleEqChange(e, 'low')} value={eqVals.lowLevel} step="0.01" name="Low" range={[-20,20]} />
-          <div>{eqVals.lowLevel}</div>
-        </div>
-        <div>
-          <Slider handleChange={(e) => handleEqChange(e, 'mid')} value={eqVals.midLevel} step="0.01" name="Mid" range={[-20,20]} />
-          <div>{eqVals.midLevel}</div>
-        </div>
-        <div>
-          <Slider handleChange={(e) => handleEqChange(e, 'high')} value={eqVals.highLevel} step="0.01" name="High" range={[-20,20]} />
-          <div>{eqVals.highLevel}</div>
-        </div>
+        <Slider 
+          handleChange={handleAttackChange} 
+          value={attack}
+          step="0.01"
+          name="Attack"
+        />
+        <Slider
+          handleChange={handleReleaseChange}
+          value={release}
+          step="0.01"
+          name="Release"
+        />
+        <Slider
+          handleChange={(e) => handleEqChange(e, 'low')}
+          value={eqVals.lowLevel}
+          step="0.01"
+          name="Low"
+          range={[-20,20]}
+        />
+        <Slider
+          handleChange={(e) => handleEqChange(e, 'mid')}
+          value={eqVals.midLevel}
+          step="0.01"
+          name="Mid"
+          range={[-20,20]}
+        />
+        <Slider
+          handleChange={(e) => handleEqChange(e, 'high')}
+          value={eqVals.highLevel}
+          step="0.01"
+          name="High"
+          range={[-20,20]}
+        />
       </div>
     </div>
   )

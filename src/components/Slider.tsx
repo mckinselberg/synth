@@ -1,4 +1,5 @@
 import React from 'react';
+import './Slider.scss';
 
 const Slider = ({
   handleChange,
@@ -21,6 +22,7 @@ const Slider = ({
         onChange={handleChange}
         name={name}
       />
+      <div>{value}</div>
     </div>
   );
 }
