@@ -1,12 +1,12 @@
 import React from 'react';
-import './Slider.scss';
+import '../scss/slider.scss';
 
 const Slider = ({
   handleChange,
   value,
   step="0.1",
   range=[0,1],
-  name
+  name,
 }) => {
   return (
     <div className="slider">
@@ -21,6 +21,7 @@ const Slider = ({
         step={step}
         onChange={handleChange}
         name={name}
+        id={name}
       />
       <div>{value}</div>
     </div>

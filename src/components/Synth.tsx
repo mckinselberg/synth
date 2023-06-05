@@ -1,6 +1,7 @@
 import * as Tone from 'tone';
 import React, { useState, useEffect } from 'react';
 import Keyboard from './Keyboard';
+import "../scss/synth.scss";
 
 const debug = false;
 // keyboard to note mappings
@@ -28,6 +29,13 @@ keyCodesMap.set("2", "F#5");
 keyCodesMap.set("w", "G5");
 keyCodesMap.set("3", "G#5");
 keyCodesMap.set("e", "A5");
+keyCodesMap.set("4", "A#5");
+keyCodesMap.set("r", "B5");
+keyCodesMap.set("t", "C6");
+keyCodesMap.set("6", "C#6");
+keyCodesMap.set("y", "D6");
+keyCodesMap.set("7", "D#6");
+keyCodesMap.set("u", "E6");
 
 const availableKeys = Array.from(keyCodesMap.keys());
 

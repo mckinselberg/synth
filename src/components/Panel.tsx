@@ -3,7 +3,8 @@ import * as Tone from 'tone';
 import Synth from "./Synth";
 import Slider from './Slider';
 import Effect from './Effect';
-import { availableEffectsWithParams as avp } from '../utils/availableEffectsWithParams';
+import { availableEffects, availableEffectsWithParams } from '../utils/availableEffectsWithParams';
+import "../scss/panel.scss";
 
 const debug = false;
 
@@ -12,11 +13,13 @@ const Panel = () => {
   const synths = {
     synth: Tone.Synth,
     amSynth: Tone.AMSynth,
+    fmSynth: Tone.FMSynth,
     duoSynth: Tone.DuoSynth,
     monoSynth: Tone.MonoSynth,
-    pluckSynth: Tone.PluckSynth,
+    // pluckSynth: Tone.PluckSynth,
     membraneSynth: Tone.MembraneSynth,
     metalSynth: Tone.MetalSynth,
+    // noiseSynth: Tone.NoiseSynth,
   };
 
   const activeSynth = useRef(synths.synth);
@@ -38,15 +41,6 @@ const Panel = () => {
   }
 
   const availableEffectsRef = useRef();
-  const availableEffects = [
-    'pingPong',
-    'autoFilter',
-    'autoWah',
-    'crusher',
-    'cheby',
-    'phaser',
-  ];
-
   const [effects, setEffects] = useState([]);
   const handleEffectsChange = (e) => {
     const tempEffects = [...effects]
@@ -76,7 +70,14 @@ const Panel = () => {
     setEqVals(tempEqVals);
   }
 
-  const destination = useRef(Tone.Destination);
+  const destination = useRef(Tone.Destination);  
+
+  const [effectsWithParams, setEffectsWithParams] = useState(availableEffectsWithParams);
+  const paramsUpdater = (e, effect, param) => {
+    const tempEffectsWithParams = {...effectsWithParams};
+    tempEffectsWithParams[effect][param].value = e.target.value;
+    setEffectsWithParams(tempEffectsWithParams);
+  }
 
   useEffect(() => {
     polySynth.current = new Tone.PolySynth(activeSynth.current, {
@@ -94,25 +95,61 @@ const Panel = () => {
     eq.current = new Tone.EQ3({
       low: eqVals.lowLevel,
       mid: eqVals.midLevel,
-      high: eqVals.highLevel
+      high: eqVals.highLevel,
     });    
     availableEffectsRef.current = {
-      pingPong: new Tone.PingPongDelay(avp.pingPong.delayTime.value, avp.pingPong.maxDelay.value),
-      autoFilter: new Tone.AutoFilter("4n"),
-      autoWah: new Tone.AutoWah(50, 6, -30),
-      crusher: new Tone.BitCrusher(4),
-      cheby: new Tone.Chebyshev(2),
+      chorus: new Tone.Chorus(
+        effectsWithParams.chorus.frequency.value,
+        effectsWithParams.chorus.delayTime.value,
+        effectsWithParams.chorus.depth.value
+      ),
+      pingPong: new Tone.PingPongDelay(
+        effectsWithParams.pingPong.delayTime.value,
+        effectsWithParams.pingPong.maxDelay.value
+      ),
+      // reverb: new Tone.Reverb(
+      //   effectsWithParams.reverb.decay.value,
+      // ),
+      autoWah: new Tone.AutoWah(
+        effectsWithParams.autoWah.baseFrequency.value,
+        effectsWithParams.autoWah.octaves,
+        effectsWithParams.autoWah.sensitivity.value
+      ),
+      distortion: new Tone.Distortion(effectsWithParams.distortion.distortion.value),
+      crusher: new Tone.BitCrusher(effectsWithParams.crusher.bits.value),
+      cheby: new Tone.Chebyshev(effectsWithParams.cheby.order.value),
       phaser: new Tone.Phaser({
-        frequency: 15,
-        octaves: 5,
-        baseFrequency: 1000
+        frequency: effectsWithParams.phaser.frequency.value,
+        octaves: effectsWithParams.phaser.octaves.value,
+        baseFrequency: effectsWithParams.phaser.baseFrequency.value,
       }),
+      tremolo: new Tone.Tremolo(
+        effectsWithParams.tremolo.frequency.value,
+        effectsWithParams.tremolo.depth.value
+      ),
+      vibrato: new Tone.Vibrato(
+        effectsWithParams.vibrato.frequency.value,
+        effectsWithParams.vibrato.depth.value
+      ),
+      autoFilter: new Tone.AutoFilter(
+        effectsWithParams.autoFilter.frequency.value,
+      ).start(),
     }
+
+    availableEffectsRef.current.pingPong.wet.value = effectsWithParams.pingPong.wet.value;
+    // availableEffectsRef.current.reverb.wet.value = effectsWithParams.reverb.wet.value;
+    
+    availableEffectsRef.current.autoWah.Q.value = effectsWithParams.autoWah.q.value;
+
     const appliedEffects = effects.map(effect => {
       return availableEffectsRef.current[effect];
     });
 
-    polySynth.current.chain(...appliedEffects, eq.current, destination.current);
+    polySynth.current.chain(
+      ...appliedEffects,
+      eq.current,
+      destination.current
+    );
     
     return () => {
       appliedEffects.forEach(effect => {
@@ -126,76 +163,73 @@ const Panel = () => {
       polySynth.current.dispose();
       polySynth.current = null;
     }
-  }, [activeSynthName, attack, release, waveShape, effects, eqVals]);
+  }, [activeSynthName, attack, release, waveShape, effects, eqVals, effectsWithParams]);
 
   return (
     <div>
-      <Synth polySynth={polySynth} />
-      <div className="dropdowns">
-        <div className="synths">
-          <select onChange={handleChangeSynth}>
-            {Object.keys(synths).map((synth, idx) => {
-              return (<option key={`${synth}_${idx}`} value={(synth)}>{synth}</option>)}
-            )}
-          </select>
+      <div className="synth-container">
+        <Synth polySynth={polySynth} />
+      </div>
+      <div className="dropdowns-sliders-container">
+        <div className="sliders">
+          <Slider 
+            handleChange={handleAttackChange} 
+            value={attack}
+            step="0.01"
+            name="Attack"
+          />
+          <Slider
+            handleChange={handleReleaseChange}
+            value={release}
+            step="0.01"
+            name="Release"
+          />
+          {['low', 'mid', 'high'].map((band, idx) => {
+            return (
+              <Slider
+                key={`${band}_${idx}`}
+                handleChange={(e) => handleEqChange(e, band)}
+                value={eqVals[`${band}Level`]}
+                step="0.01"
+                name={band}
+                range={[-20,20]}
+              />
+            )
+          })}
         </div>
-        <div className="wave-shapes">
-          <select onChange={handleWaveShapeChange}>
-            {waveShapes.map((waveShape, idx) => {
-              return <option key={`${waveShape}_${idx}`}>{waveShape}</option>
-            })}
-          </select>
+        <div className="dropdowns">
+          <div className="synths">
+            <select onChange={handleChangeSynth}>
+              {Object.keys(synths).map((synth, idx) => {
+                return (<option key={`${synth}_${idx}`} value={(synth)}>{synth}</option>)}
+              )}
+            </select>
+          </div>
+          <div className="wave-shapes">
+            <select onChange={handleWaveShapeChange}>
+              {waveShapes.map((waveShape, idx) => {
+                return <option key={`${waveShape}_${idx}`}>{waveShape}</option>
+              })}
+            </select>
+          </div>
         </div>
       </div>
-      <div className="checkboxes">
+      <div className="effects-container">
+        <p>{effects.map(effect => `${effect} => `)} {effects.length > 0 ? ` out ` : <span>&nbsp;</span>}</p>
         <div className="effects">
           {availableEffects.map((effect, idx) => {
-            return effect !== 'pingPong' ? null : (
+            return (
               <Effect 
                 key={`${effect}_${idx}`}
                 effect={effect}
                 idx={idx}
                 handleEffectsChange={handleEffectsChange}
-                params={avp[effect]}
+                effectsWithParams={effectsWithParams[effect]}
+                paramsUpdater={paramsUpdater}
               />
             )}
           )}
         </div>
-      </div>
-      <div className="sliders">
-        <Slider 
-          handleChange={handleAttackChange} 
-          value={attack}
-          step="0.01"
-          name="Attack"
-        />
-        <Slider
-          handleChange={handleReleaseChange}
-          value={release}
-          step="0.01"
-          name="Release"
-        />
-        <Slider
-          handleChange={(e) => handleEqChange(e, 'low')}
-          value={eqVals.lowLevel}
-          step="0.01"
-          name="Low"
-          range={[-20,20]}
-        />
-        <Slider
-          handleChange={(e) => handleEqChange(e, 'mid')}
-          value={eqVals.midLevel}
-          step="0.01"
-          name="Mid"
-          range={[-20,20]}
-        />
-        <Slider
-          handleChange={(e) => handleEqChange(e, 'high')}
-          value={eqVals.highLevel}
-          step="0.01"
-          name="High"
-          range={[-20,20]}
-        />
       </div>
     </div>
   )
