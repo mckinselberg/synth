@@ -7,11 +7,21 @@ body {
   margin: 0;
   padding: 0;
 }
+
+.buttons {
+  display:flex;
+  justify-content:center;
+  margin-bottom:20px;
+  button {
+    margin: 5px;
+  }
+}
+
 #github {
   margin: 0 auto;
   display: flex;
   justify-content: center;
-  // position: absolute;
+  position: fixed;
   bottom:0;
   width: 100%;
   padding-bottom: 10px;
@@ -24,14 +34,5 @@ body {
       color: rgb(236, 144, 239);
       text-decoration: underline;
     }
-  }
-}
-
-.buttons {
-  display:flex;
-  justify-content:center;
-  margin-bottom:20px;
-  button {
-    margin: 5px;
   }
 }

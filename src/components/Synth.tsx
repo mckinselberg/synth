@@ -1,146 +1,15 @@
-import * as Tone from 'tone';
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Keyboard from './Keyboard';
 import "../scss/synth.scss";
 
-const debug = false;
-// keyboard to note mappings
-
-const keyCodesMap = new Map();
-keyCodesMap.set("z", "C4");
-keyCodesMap.set("s", "C#4");
-keyCodesMap.set("x", "D4");
-keyCodesMap.set("d", "D#4");
-keyCodesMap.set("c", "E4");
-keyCodesMap.set("v", "F4");
-keyCodesMap.set("g", "F#4");
-keyCodesMap.set("b", "G4");
-keyCodesMap.set("h", "G#4");
-keyCodesMap.set("n", "A4");
-keyCodesMap.set("j", "A#4");
-keyCodesMap.set("m", "B4");
-keyCodesMap.set(",", "C5");
-keyCodesMap.set("l", "C#5");
-keyCodesMap.set(".", "D5");
-keyCodesMap.set(";", "D#5");
-keyCodesMap.set("/", "E5");
-keyCodesMap.set("q", "F5");
-keyCodesMap.set("2", "F#5");
-keyCodesMap.set("w", "G5");
-keyCodesMap.set("3", "G#5");
-keyCodesMap.set("e", "A5");
-keyCodesMap.set("4", "A#5");
-keyCodesMap.set("r", "B5");
-keyCodesMap.set("t", "C6");
-keyCodesMap.set("6", "C#6");
-keyCodesMap.set("y", "D6");
-keyCodesMap.set("7", "D#6");
-keyCodesMap.set("u", "E6");
-
-const availableKeys = Array.from(keyCodesMap.keys());
-
-const Synth = ({polySynth}) => {
-
-  const [activeNotes, setActiveNotes] = useState({});
-  const [toneStarted, setToneStarted] = useState(false);
-  const [mouseDown, setMouseDown] = useState(false);
-  // const [clickedNote, setClickedNote] = useState(null);
- 
-  const playNote = (e) => {
-
-    if (!toneStarted) {
-      Tone.Transport.start();
-      setToneStarted(true);
-    }
-
-    if (!availableKeys.some(key => key === e.key)) {
-      return;
-    } else {
-      e.preventDefault();
-    }
-
-    if (!activeNotes[keyCodesMap.get(e.key)]) {
-      polySynth.current.triggerAttack(keyCodesMap.get(e.key));
-      const tempActiveNotes = {...activeNotes}
-      tempActiveNotes[keyCodesMap.get(e.key)] = true;
-      setActiveNotes(tempActiveNotes);
-    }
-  }
-
-  const endNote = (e) => {
-    e.preventDefault();
-    const now = Tone.now();
-    polySynth.current.triggerRelease(keyCodesMap.get(e.key), now);
-    const tempActiveNotes = {...activeNotes}
-    tempActiveNotes[keyCodesMap.get(e.key)] = false;
-    setActiveNotes(tempActiveNotes);
-  }
-
-  useEffect(() => {
-    window.addEventListener('keydown', playNote);
-    window.addEventListener('keyup', endNote);
-    return () => {
-      window.removeEventListener('keydown', playNote);
-      window.removeEventListener('keyup', endNote);
-    }
-  });
-  
-  const handleMouseDown = (e, note) => {
-    e.preventDefault();
-    setMouseDown(true);
-    // setClickedNote(note);
-    if (!activeNotes[note]) {
-      polySynth.current.triggerAttack(note);
-      const tempActiveNotes = {...activeNotes}
-      tempActiveNotes[note] = true;
-      setActiveNotes(tempActiveNotes);
-    }
-  }
-
-  const handleMouseUp = (e, note) => {
-    e.preventDefault();
-    setMouseDown(false);
-    // setClickedNote(null);
-    const now = Tone.now();
-    polySynth.current.triggerRelease(note, now);
-    const tempActiveNotes = {...activeNotes}
-    tempActiveNotes[note] = false;
-    setActiveNotes(tempActiveNotes);
-  }
-
-  const handleMouseEnter = (e, note) => {
-    e.preventDefault();
-    if (!mouseDown) return;
-    setMouseDown(true);
-    // setClickedNote(note);
-    if (!activeNotes[note]) {
-      polySynth.current.triggerAttack(note);
-      const tempActiveNotes = {...activeNotes}
-      tempActiveNotes[note] = true;
-      setActiveNotes(tempActiveNotes);
-    }
-  }
-
-  const handleMouseLeave = (e, note) => {
-    e.preventDefault();
-    if (!mouseDown) return;
-    // setClickedNote(null);
-    const now = Tone.now();
-    polySynth.current.triggerRelease(note, now);
-    const tempActiveNotes = {...activeNotes}
-    tempActiveNotes[note] = false;
-    setActiveNotes(tempActiveNotes);
-  }
+const Synth = ({polySynth, keyCodesMap, availableKeys}) => {
 
   return (
     <div id="synth">
       <Keyboard
-        keyCodes={keyCodesMap}
-        activeNotes={activeNotes}
-        handleMouseDown={handleMouseDown}
-        handleMouseUp={handleMouseUp}
-        handleMouseEnter={handleMouseEnter}
-        handleMouseLeave={handleMouseLeave}
+        keyCodesMap={keyCodesMap}
+        availableKeys={availableKeys}
+        polySynth={polySynth}
       />
     </div>
   );

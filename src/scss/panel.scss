@@ -47,6 +47,10 @@
     flex-wrap: wrap;
     justify-content: left;
     .effect {
+      &.closed {
+        height: 20px;
+        overflow: hidden;
+      }
       label {
         text-align: center ;
         font-size: .9em;

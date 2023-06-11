@@ -8,6 +8,40 @@ import "../scss/panel.scss";
 
 const debug = false;
 
+
+const keyCodesMap = new Map();
+keyCodesMap.set("z", "C4");
+keyCodesMap.set("s", "C#4");
+keyCodesMap.set("x", "D4");
+keyCodesMap.set("d", "D#4");
+keyCodesMap.set("c", "E4");
+keyCodesMap.set("v", "F4");
+keyCodesMap.set("g", "F#4");
+keyCodesMap.set("b", "G4");
+keyCodesMap.set("h", "G#4");
+keyCodesMap.set("n", "A4");
+keyCodesMap.set("j", "A#4");
+keyCodesMap.set("m", "B4");
+keyCodesMap.set(",", "C5");
+keyCodesMap.set("l", "C#5");
+keyCodesMap.set(".", "D5");
+keyCodesMap.set(";", "D#5");
+keyCodesMap.set("/", "E5");
+keyCodesMap.set("q", "F5");
+keyCodesMap.set("2", "F#5");
+keyCodesMap.set("w", "G5");
+keyCodesMap.set("3", "G#5");
+keyCodesMap.set("e", "A5");
+keyCodesMap.set("4", "A#5");
+keyCodesMap.set("r", "B5");
+keyCodesMap.set("t", "C6");
+keyCodesMap.set("6", "C#6");
+keyCodesMap.set("y", "D6");
+keyCodesMap.set("7", "D#6");
+keyCodesMap.set("u", "E6");
+
+const availableKeys = Array.from(keyCodesMap.keys());
+
 const Panel = () => {
   const polySynth = useRef();
   const synths = {
@@ -168,7 +202,7 @@ const Panel = () => {
   return (
     <div>
       <div className="synth-container">
-        <Synth polySynth={polySynth} />
+        <Synth polySynth={polySynth} keyCodesMap={keyCodesMap} availableKeys={availableKeys}/>
       </div>
       <div className="dropdowns-sliders-container">
         <div className="sliders">
