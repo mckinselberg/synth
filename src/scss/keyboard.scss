@@ -1,3 +1,19 @@
+// box-shadow: rgba(240, 46, 170, 0.4) 0px 5px, rgba(240, 46, 170, 0.3) 0px 10px, rgba(240, 46, 170, 0.2) 0px 15px, rgba(240, 46, 170, 0.1) 0px 20px, rgba(240, 46, 170, 0.05) 0px 25px;
+@mixin customBoxShadow {
+  $color: rgba(240, 46, 170, 0.4);
+  $offsets: 5px 10px 15px 20px 25px;
+  $opacities: 0.4 0.3 0.2 0.1 0.05;
+
+  $boxShadow: ();
+
+  @for $i from 1 through length($offsets) {
+    $offset: nth($offsets, $i);
+    $opacity: nth($opacities, $i);
+    $boxShadow: append($boxShadow, unquote("rgba(240, 46, 170, #{$opacity}) 0px #{$offset}"), comma);
+  }
+
+  box-shadow: $boxShadow;
+}
 
 .key {
   user-select: none;
@@ -20,16 +36,16 @@
   }
   &.active {
     background-color: lightgrey;
+    @include customBoxShadow;
     // box-shadow: inset rgba(0, 0, 0, 0.24) 0px 3px 8px;
-    box-shadow: rgba(240, 46, 170, 0.4) 0px 5px, rgba(240, 46, 170, 0.3) 0px 10px, rgba(240, 46, 170, 0.2) 0px 15px, rgba(240, 46, 170, 0.1) 0px 20px, rgba(240, 46, 170, 0.05) 0px 25px;
   }
   div {
     text-align: center;
     width: 100%;
-    height: 100%;
+    height: 50%;
     font-size: 0.75em;
     display: flex;
-    align-items: bottom;
+    align-items: flex-end;
     flex-wrap: wrap;
     flex-direction: row;
     p {
@@ -37,15 +53,17 @@
       text-align: center;
       width: 100%;
       display:block;
-      // &:first-of-type {
-        color:gray;
-        font-size: .85em;
-        margin-bottom: .3em;
-      // }
-      // &:last-of-type {
-        font-size: .95em;
-        margin-bottom: 1em;
-      // }
+      span {
+        &:first-of-type {
+          color:gray;
+          font-size: .85em;
+          margin-bottom: .3em;
+        }
+        &:last-of-type {
+          font-size: .95em;
+          margin-bottom: 1em;
+        }
+      }
     }
   }
 }
@@ -60,5 +78,8 @@
   box-shadow: rgba(0, 0, 0, 0.24) 0px 2px 5px;
   &.active {
     background-color: lightslategray;
+  }
+  div {
+    height: 100%;
   }
 }

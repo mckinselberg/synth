@@ -20,13 +20,13 @@ const Keyboard = ({
   availableKeys,
   keyCodesMap,
 }) => {
-  const [activeNotes, setActiveNotes] = useState({});
+  const activeNotesRef = useRef({});
   const [toneStarted, setToneStarted] = useState(false);
-  // const [mouseDown, setMouseDown] = useState(false);
+  const [forceRender, setForceRender] = useState(false);
   const mouseDownRef = useRef(false);
 
   const playNote = (e) => {
-
+    e.preventDefault();
     if (!toneStarted) {
       Tone.Transport.start();
       setToneStarted(true);
@@ -38,11 +38,11 @@ const Keyboard = ({
       e.preventDefault();
     }
 
-    if (!activeNotes[keyCodesMap.get(e.key)]) {
+    if (!activeNotesRef.current[keyCodesMap.get(e.key)]) {
       polySynth.current.triggerAttack(keyCodesMap.get(e.key));
-      const tempActiveNotes = {...activeNotes}
-      tempActiveNotes[keyCodesMap.get(e.key)] = true;
-      setActiveNotes(tempActiveNotes);
+      activeNotesRef.current[keyCodesMap.get(e.key)] = true;
+      if (e.repeat) return;
+      setForceRender(!forceRender);
     }
   }
 
@@ -50,9 +50,8 @@ const Keyboard = ({
     e.preventDefault();
     const now = Tone.now();
     polySynth.current.triggerRelease(keyCodesMap.get(e.key), now);
-    const tempActiveNotes = {...activeNotes}
-    tempActiveNotes[keyCodesMap.get(e.key)] = false;
-    setActiveNotes(tempActiveNotes);
+    activeNotesRef.current[keyCodesMap.get(e.key)] = false;
+    setForceRender(!forceRender);
   }
 
   useEffect(() => {
@@ -67,11 +66,10 @@ const Keyboard = ({
   const handleMouseDown = (e, note) => {
     e.preventDefault();
     mouseDownRef.current = true;
-    if (!activeNotes[note]) {
+    if (!activeNotesRef.current[note]) {
       polySynth.current.triggerAttack(note);
-      const tempActiveNotes = {...activeNotes}
-      tempActiveNotes[note] = true;
-      setActiveNotes(tempActiveNotes);
+      activeNotesRef.current[note] = true;
+      setForceRender(!forceRender);
     }
   }
 
@@ -80,51 +78,29 @@ const Keyboard = ({
     mouseDownRef.current = false;
     const now = Tone.now();
     polySynth.current.triggerRelease(note, now);
-    const tempActiveNotes = {...activeNotes}
-    tempActiveNotes[note] = false;
-    setActiveNotes(tempActiveNotes);
+    activeNotesRef.current[note] = false;
+    setForceRender(!forceRender);
+
   }
 
   const handleMouseEnter = (e, note) => {
     if (!mouseDownRef.current) return;
     e.preventDefault();
-    // e.stopPropagation();
-    
-    // if mouse is down and mouse position is within the target's padding, trigger note
-    const target = e.target;
-    const rect = target.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const padding = 5;
-    if ((x > padding && x < rect.width - padding && y > padding && y < rect.height - padding) && !activeNotes[note]) {
-      console.log(note)
+    if (!activeNotesRef.current[note]) {
       polySynth.current.triggerAttack(note);
-      const tempActiveNotes = {...activeNotes}
-      tempActiveNotes[note] = true;
-      const now = Tone.now();
-      setActiveNotes(tempActiveNotes);
-    }
-
-    if (!activeNotes[note]) {
-      polySynth.current.triggerAttack(note);
-      const tempActiveNotes = {...activeNotes}
-      tempActiveNotes[note] = true;
-      const now = Tone.now();
-      setActiveNotes(tempActiveNotes);
+      activeNotesRef.current[note] = true;
+      setForceRender(!forceRender);
     }
   }
 
   const handleMouseLeave = (e, note) => {
     if (!mouseDownRef.current) return;
     e.preventDefault();
-    // e.stopPropagation();
     const now = Tone.now();
     polySynth.current.triggerRelease(note, now);
-    const tempActiveNotes = {...activeNotes}
-    tempActiveNotes[note] = false;
-    Tone.Transport.scheduleOnce(setActiveNotes(tempActiveNotes), now);
+    activeNotesRef.current[note] = false;
+    setForceRender(!forceRender);
   }
-
 
   const Key = ({note, keyboardKey, activeNotes}: IKeyProps ) => {
     const keyColor = useMemo(() => keyRegex.test(note) ? `black` : `white`);
@@ -148,9 +124,13 @@ const Keyboard = ({
           onMouseEnter={(e) => handleMouseEnter(e, note)}
           onMouseLeave={(e) => handleMouseLeave(e, note)}
         >
-          {/* <p>{note}</p> */}
-          {/* <p>{keyboardKey}</p> */}
-          <p>{note}<br/>({keyboardKey})</p>
+          <p>
+            <span>{note}</span>
+            <br/>
+            <span>
+              ({keyboardKey})
+            </span>
+          </p>
         </div>
       </div>
     );
@@ -166,7 +146,7 @@ const Keyboard = ({
             key={`${note}${keyboardKey}`}
             note={note}
             keyboardKey={keyboardKey}
-            activeNotes={activeNotes}
+            activeNotes={activeNotesRef.current}
           />
         );
       })}
