@@ -11,9 +11,18 @@ interface IKeyProps {
   activeNotes: object,
 }
 
-interface IKeyCodeMap {
-  [key: string]: string
-}
+// interface IKeyCodeMap {
+//   [key: string]: string
+// }
+
+// disable Tone context when window is not focused
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    Tone.Transport.pause();
+  } else {
+    Tone.Transport.start();
+  }
+});
 
 const Keyboard = ({
   polySynth,
@@ -28,6 +37,7 @@ const Keyboard = ({
   const playNote = (e) => {
     e.preventDefault();
     if (!toneStarted) {
+      Tone.start();
       Tone.Transport.start();
       setToneStarted(true);
     }
@@ -102,6 +112,29 @@ const Keyboard = ({
     setForceRender(!forceRender);
   }
 
+  const handleTouchStart = (e, note) => {
+    if (!toneStarted) {
+      Tone.start();
+      Tone.Transport.start();
+      setToneStarted(true);
+    }
+    e.preventDefault();
+    if (!activeNotesRef.current[note]) {
+      polySynth.current.triggerAttack(note);
+      activeNotesRef.current[note] = true;
+      setForceRender(!forceRender);
+    }
+  }
+
+  const handleTouchEnd = (e, note) => {
+    e.preventDefault();
+    const now = Tone.now();
+    polySynth.current.triggerRelease(note, now);
+    activeNotesRef.current[note] = false;
+    setForceRender(!forceRender);
+  }
+
+
   const Key = ({note, keyboardKey, activeNotes}: IKeyProps ) => {
     const keyColor = useMemo(() => keyRegex.test(note) ? `black` : `white`);
     const sharpOrFlat = useMemo(() => noteRegex.test(note) ? ` no-margin` : ``);
@@ -119,8 +152,8 @@ const Keyboard = ({
         <div
           onMouseDown={(e) => handleMouseDown(e, note)}
           onMouseUp={(e) => handleMouseUp(e, note)}
-          onTouchStart={(e) => handleMouseDown(e, note)}
-          onTouchEnd={(e) => handleMouseUp(e, note)}
+          onTouchStart={(e) => handleTouchStart(e, note)}
+          onTouchEnd={(e) => handleTouchEnd(e, note)}
           onMouseEnter={(e) => handleMouseEnter(e, note)}
           onMouseLeave={(e) => handleMouseLeave(e, note)}
         >

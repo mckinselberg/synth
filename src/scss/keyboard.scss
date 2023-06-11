@@ -17,7 +17,7 @@
 
 .key {
   user-select: none;
-  width: 75px;
+  width: 50px;
   height: 175px;
   box-sizing: border-box;
   border: 1px solid #cecece;
@@ -29,8 +29,6 @@
   background-color: #fff;
   display:flex;
   align-items: flex-end;
-  padding-left: 1%;
-  padding-right: 1%;
   &.no-margin {
     margin-left:0;
   }

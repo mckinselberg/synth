@@ -8,7 +8,6 @@ import "../scss/panel.scss";
 
 const debug = false;
 
-
 const keyCodesMap = new Map();
 keyCodesMap.set("z", "C4");
 keyCodesMap.set("s", "C#4");
@@ -249,7 +248,10 @@ const Panel = () => {
         </div>
       </div>
       <div className="effects-container">
-        <p>{effects.map(effect => `${effect} => `)} {effects.length > 0 ? ` out ` : <span>&nbsp;</span>}</p>
+        <div className="effects-chain">
+          {effects.map(effect => <><div>{effect}</div><span>{`=> `}</span></>)} {effects.length > 0 
+          ? <div> out</div>
+          : <span>&nbsp;</span>}</div>
         <div className="effects">
           {availableEffects.map((effect, idx) => {
             return (

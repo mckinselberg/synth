@@ -37,8 +37,19 @@
 }
 
 .effects-container {
-  p {
-    text-align: center;
+  // p {
+  //   text-align: center;
+  // }
+  .effects-chain {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    div {
+      border: 1px solid white;
+      padding:3px;
+      margin: 0 3px 0 3px;
+      
+    }
   }
   .effects {
     padding-left: .25rem;
