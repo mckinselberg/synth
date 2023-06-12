@@ -140,12 +140,12 @@ const Keyboard = ({
       Tone.Transport.start();
       setToneStarted(true);
       alert('started');
-      window.removeEventListener('touchstart', startTone);
+      document.body.removeEventListener('touchstart', startTone);
     }
   }
 
   useEffect(() => {
-    window.addEventListener('touchstart', startTone);
+    document.body.addEventListener('touchstart', startTone);
   }, []);
 
 
