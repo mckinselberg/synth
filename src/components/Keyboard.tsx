@@ -134,6 +134,23 @@ const Keyboard = ({
     setForceRender(!forceRender);
   }
 
+  const startTone = (e) => {
+    if (!toneStarted) {
+      Tone.start();
+      Tone.Transport.start();
+      setToneStarted(true);
+    }
+  }
+
+  useEffect(() => {
+    document.addEventListener('ontouchstart', startTone);
+    alert('started');
+    return () => {
+      document.removeEventListener('ontouchstart', startTone);
+    }
+  }, [])
+
+
 
   const Key = ({note, keyboardKey, activeNotes}: IKeyProps ) => {
     const keyColor = useMemo(() => keyRegex.test(note) ? `black` : `white`);
