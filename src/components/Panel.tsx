@@ -198,11 +198,24 @@ const Panel = () => {
     }
   }, [activeSynthName, attack, release, waveShape, effects, eqVals, effectsWithParams]);
 
+  const [toneStarted, setToneStarted] = useState(false);
+
+  const startTone = () => {
+    if (!toneStarted) {
+      Tone.start();
+      Tone.Transport.start();
+      setToneStarted(true);
+      alert('tone started');
+      // document.body.removeEventListener('touchstart', startTone);
+    }
+  }
+
   return (
     <div>
       <div className="synth-container">
         <Synth polySynth={polySynth} keyCodesMap={keyCodesMap} availableKeys={availableKeys}/>
       </div>
+      {!toneStarted && <button onClick={startTone}>Start Tone</button>}
       <div className="dropdowns-sliders-container">
         <div className="sliders">
           <Slider 

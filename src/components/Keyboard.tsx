@@ -30,28 +30,11 @@ const Keyboard = ({
   keyCodesMap,
 }) => {
   const activeNotesRef = useRef({});
-  const [toneStarted, setToneStarted] = useState(false);
   const [forceRender, setForceRender] = useState(false);
   const mouseDownRef = useRef(false);
 
-  const startTone = () => {
-    if (!toneStarted) {
-      Tone.start();
-      Tone.Transport.start();
-      setToneStarted(true);
-      alert('tone started');
-      // document.body.removeEventListener('touchstart', startTone);
-    }
-  }
-
   const playNote = (e) => {
     e.preventDefault();
-    if (!toneStarted) {
-      Tone.start();
-      Tone.Transport.start();
-      setToneStarted(true);
-    }
-
     if (!availableKeys.some(key => key === e.key)) {
       return;
     } else {
@@ -123,10 +106,6 @@ const Keyboard = ({
   }
 
   const handleTouchStart = (e, note) => {
-    if (!toneStarted) {
-      startTone();
-      return;
-    }
     e.preventDefault();
     if (!activeNotesRef.current[note]) {
       polySynth.current.triggerAttack(note);
@@ -143,9 +122,6 @@ const Keyboard = ({
     setForceRender(!forceRender);
   }
 
-  // useEffect(() => {
-  //   document.body.addEventListener('touchstart', startTone);
-  // }, []);
 
 
 
