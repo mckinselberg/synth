@@ -200,9 +200,9 @@ const Panel = () => {
 
   const [toneStarted, setToneStarted] = useState(false);
 
-  const startTone = () => {
+  const startTone = async () => {
     if (!toneStarted) {
-      Tone.start();
+      await Tone.start();
       Tone.Transport.start();
       setToneStarted(true);
       alert('tone started');
