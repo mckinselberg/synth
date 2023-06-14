@@ -6,7 +6,7 @@ import Effect from './Effect';
 import { availableEffects, availableEffectsWithParams } from '../utils/availableEffectsWithParams';
 import "../scss/panel.scss";
 
-const debug = false;
+const debug = true;
 
 const keyCodesMap = new Map();
 keyCodesMap.set("z", "C4");
