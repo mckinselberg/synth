@@ -34,6 +34,16 @@ const Keyboard = ({
   const [forceRender, setForceRender] = useState(false);
   const mouseDownRef = useRef(false);
 
+  const startTone = () => {
+    if (!toneStarted) {
+      Tone.start();
+      Tone.Transport.start();
+      setToneStarted(true);
+      alert('tone started');
+      // document.body.removeEventListener('touchstart', startTone);
+    }
+  }
+
   const playNote = (e) => {
     e.preventDefault();
     if (!toneStarted) {
@@ -114,9 +124,8 @@ const Keyboard = ({
 
   const handleTouchStart = (e, note) => {
     if (!toneStarted) {
-      Tone.start();
-      Tone.Transport.start();
-      setToneStarted(true);
+      startTone();
+      return;
     }
     e.preventDefault();
     if (!activeNotesRef.current[note]) {
@@ -134,19 +143,9 @@ const Keyboard = ({
     setForceRender(!forceRender);
   }
 
-  const startTone = (e) => {
-    if (!toneStarted) {
-      Tone.start();
-      Tone.Transport.start();
-      setToneStarted(true);
-      alert('started');
-      document.body.removeEventListener('touchstart', startTone);
-    }
-  }
-
-  useEffect(() => {
-    document.body.addEventListener('touchstart', startTone);
-  }, []);
+  // useEffect(() => {
+  //   document.body.addEventListener('touchstart', startTone);
+  // }, []);
 
 
 
