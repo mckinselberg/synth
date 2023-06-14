@@ -202,11 +202,15 @@ const Panel = () => {
 
   const startTone = async () => {
     if (!toneStarted) {
-      await Tone.start();
-      Tone.Transport.start();
-      setToneStarted(true);
-      alert('tone started');
-      // document.body.removeEventListener('touchstart', startTone);
+      try {
+        await Tone.start();
+        Tone.Transport.start();
+        setToneStarted(true);
+        alert('tone started');
+      } catch (e) {
+        console.log(e);
+        alert('tone failed to start');
+      }
     }
   }
 
