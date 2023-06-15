@@ -202,6 +202,7 @@ const Panel = () => {
 
   const startTone = async () => {
     if (!toneStarted) {
+      
       try {
         await Tone.start();
         Tone.Transport.start();
@@ -219,7 +220,7 @@ const Panel = () => {
       <div className="synth-container">
         <Synth polySynth={polySynth} keyCodesMap={keyCodesMap} availableKeys={availableKeys}/>
       </div>
-      {!toneStarted && <button onClick={startTone}>Start Tone</button>}
+      {/* {!toneStarted && <button onClick={startTone}>Start Tone</button>} */}
       <div className="dropdowns-sliders-container">
         <div className="sliders">
           <Slider 
