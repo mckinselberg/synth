@@ -7,13 +7,25 @@
   display: flex;
   flex-direction: row;
   flex-basis: content;
-  align-items: center;
   align-content: space-between;
   flex-wrap: wrap;
-  .dropdowns {
+  .sliders {
+    margin-top: 1%;
+    padding: .5em;
     display: flex;
     flex-direction: column;
-    padding: 0.75em 0 0 .5em;
+    flex-basis: content;
+    .slider {
+      div:last-of-type {
+        width: 1%;
+      }
+    }
+  }
+  .dropdowns {
+    display: flex;
+    display: none;
+    flex-direction: column;
+    padding: 0.75em 0 0 1em;
     .synths,
     .wave-shapes {
       width: 100%;
@@ -24,16 +36,12 @@
       }
     }
   }
-  .sliders {
-    margin-top: 1%;
-    padding: .5em;
+  .radio-buttons {
     display: flex;
-    flex-direction: column;
-    flex-basis: content;
-    label {
-      
-    }
+    flex-direction: row;
+    padding: 0.75em 0 0 2em;
   }
+  
 }
 
 .effects-container {

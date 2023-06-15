@@ -248,6 +248,32 @@ const Panel = () => {
             )
           })}
         </div>
+        <div className="radio-buttons">
+          <div className="synths">
+              {Object.keys(synths).map((synth, idx) => {
+                return (
+                  <div>
+                    <label>
+                      <input name="synthRadioButtons" onChange={handleChangeSynth} type='radio' key={`${synth}_${idx}`} value={synth}/>
+                      {synth}
+                    </label>
+                  </div>
+                )}
+              )}
+          </div>
+          <div className="wave-shapes">
+              {waveShapes.map((waveShape, idx) => {
+                return (
+                  <div>
+                    <label>
+                      <input name="waveShapeRadioButtons" onChange={handleWaveShapeChange} type='radio' key={`${waveShape}_${idx}`} value={waveShape}/>
+                      {waveShape}
+                    </label>
+                  </div>
+                )}
+              )}
+          </div>
+        </div>
         <div className="dropdowns">
           <div className="synths">
             <select onChange={handleChangeSynth}>
