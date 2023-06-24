@@ -1,9 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Slider from './Slider';
 
 const Effect = ({ effect, handleEffectsChange, effectsWithParams, paramsUpdater }) => {
+  const [open, setOpen] = useState(false);
+  const handleExpandClick = () => {
+    setOpen(!open);
+  }
   return (
-    <div className="effect">
+    <div className={`effect${!open ? ' closed' : ''}`}>
+      <div className={`expander${open ? ' expanded' : ''}`} onClick={handleExpandClick}>^</div>
       <label htmlFor={effect}>{effect}</label>
       <input
         type="checkbox"
@@ -17,7 +22,7 @@ const Effect = ({ effect, handleEffectsChange, effectsWithParams, paramsUpdater 
         const value = effectsWithParams[param].value;
         return (
           <Slider
-            key={`${idx}_${param}`}
+            // key={`${idx}_${param}`}
             handleChange={(e) => {
               paramsUpdater(e, effect, param);
             }}

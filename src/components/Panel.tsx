@@ -5,8 +5,9 @@ import Slider from './Slider';
 import Effect from './Effect';
 import { availableEffects, availableEffectsWithParams } from '../utils/availableEffectsWithParams';
 import "../scss/panel.scss";
+import EffectsChain from './EffectsChain';
 
-const debug = true;
+const debug = false;
 
 const keyCodesMap = new Map();
 keyCodesMap.set("z", "C4");
@@ -55,6 +56,7 @@ const Panel = () => {
     // noiseSynth: Tone.NoiseSynth,
   };
 
+
   const activeSynth = useRef(synths.synth);
   const [activeSynthName, setActiveSynthName] = useState(activeSynth.current.name);
   const handleChangeSynth = (e) => {
@@ -68,9 +70,9 @@ const Panel = () => {
     'sawtooth',
     'triangle',
   ];  
-  const [waveShape, setWaveShape] = useState(waveShapes[0]);
+  const [activeWaveShape, setActiveWaveShape] = useState(waveShapes[0]);
   const handleWaveShapeChange = (e) => {
-    setWaveShape(e.target.value);
+    setActiveWaveShape(e.target.value);
   }
 
   const availableEffectsRef = useRef();
@@ -95,6 +97,11 @@ const Panel = () => {
     setRelease(e.target.value);
   }
 
+  const [masterVolume, setMasterVolume] = useState(0);
+  const handleMasterVolumeChange = (e) => {
+    setMasterVolume(e.target.value);
+  }
+
   const eq = useRef();
   const [eqVals, setEqVals] = useState({lowLevel: 0, midLevel: 0, highLevel: 0})
   const handleEqChange = (e, band) => {
@@ -115,7 +122,7 @@ const Panel = () => {
   useEffect(() => {
     polySynth.current = new Tone.PolySynth(activeSynth.current, {
         oscillator: {
-          type: waveShape,
+          type: activeWaveShape,
           phase: 0,
         },
         envelope: {
@@ -183,6 +190,8 @@ const Panel = () => {
       eq.current,
       destination.current
     );
+
+    Tone.Destination.volume.value = masterVolume;
     
     return () => {
       appliedEffects.forEach(effect => {
@@ -196,7 +205,7 @@ const Panel = () => {
       polySynth.current.dispose();
       polySynth.current = null;
     }
-  }, [activeSynthName, attack, release, waveShape, effects, eqVals, effectsWithParams]);
+  }, [activeSynthName, attack, release, activeWaveShape, effects, eqVals, effectsWithParams, masterVolume]);
 
   const [toneStarted, setToneStarted] = useState(false);
 
@@ -214,7 +223,6 @@ const Panel = () => {
       }
     }
   }
-
   return (
     <div>
       <div className="synth-container">
@@ -223,6 +231,13 @@ const Panel = () => {
       {/* {!toneStarted && <button onClick={startTone}>Start Tone</button>} */}
       <div className="dropdowns-sliders-container">
         <div className="sliders">
+          <Slider
+            handleChange={handleMasterVolumeChange}
+            value={masterVolume}
+            step="1"
+            name="Master Volume"
+            range={[-50,0]}
+          />
           <Slider 
             handleChange={handleAttackChange} 
             value={attack}
@@ -254,7 +269,14 @@ const Panel = () => {
                 return (
                   <div>
                     <label>
-                      <input name="synthRadioButtons" onChange={handleChangeSynth} type='radio' key={`${synth}_${idx}`} value={synth}/>
+                      <input
+                        name="synthRadioButtons"
+                        onChange={handleChangeSynth}
+                        type='radio'
+                        key={`${synth}_${idx}`}
+                        value={synth}
+                        checked={synth.toLowerCase() === activeSynth.current.name.toLowerCase() ? true : false}
+                      />
                       {synth}
                     </label>
                   </div>
@@ -266,7 +288,14 @@ const Panel = () => {
                 return (
                   <div>
                     <label>
-                      <input name="waveShapeRadioButtons" onChange={handleWaveShapeChange} type='radio' key={`${waveShape}_${idx}`} value={waveShape}/>
+                      <input
+                        name="waveShapeRadioButtons"
+                        onChange={handleWaveShapeChange}
+                        type='radio'
+                        key={`${waveShape}_${idx}`}
+                        value={waveShape}
+                        checked={waveShape === activeWaveShape ? true : false}
+                      />
                       {waveShape}
                     </label>
                   </div>
@@ -292,10 +321,12 @@ const Panel = () => {
         </div>
       </div>
       <div className="effects-container">
-        <div className="effects-chain">
-          {effects.map(effect => <><div>{effect}</div><span>{`=> `}</span></>)} {effects.length > 0 
+        {/* <div className="effects-chain">
+          {effects.map((effect, idx) => <><div draggable="true" onDragStart={handleDrag} id={idx}>{effect}</div><span>{`=> `}</span></>)} {effects.length > 0 
           ? <div> out</div>
-          : <span>&nbsp;</span>}</div>
+          : <span>&nbsp;</span>}
+        </div> */}
+        <EffectsChain effects={effects} setEffects={setEffects}/>
         <div className="effects">
           {availableEffects.map((effect, idx) => {
             return (
