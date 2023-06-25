@@ -83,7 +83,6 @@ const Keyboard = ({
     polySynth.current.triggerRelease(note, now);
     activeNotesRef.current[note] = false;
     setForceRender(!forceRender);
-
   }
 
   const handleMouseEnter = (e, note) => {
@@ -121,9 +120,6 @@ const Keyboard = ({
     activeNotesRef.current[note] = false;
     setForceRender(!forceRender);
   }
-
-
-
 
   const Key = ({note, keyboardKey, activeNotes}: IKeyProps ) => {
     const keyColor = useMemo(() => keyRegex.test(note) ? `black` : `white`);
@@ -175,7 +171,6 @@ const Keyboard = ({
       })}
     </>
   );
-
 }
 
 export default Keyboard;

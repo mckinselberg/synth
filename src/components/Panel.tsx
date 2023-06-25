@@ -321,11 +321,6 @@ const Panel = () => {
         </div>
       </div>
       <div className="effects-container">
-        {/* <div className="effects-chain">
-          {effects.map((effect, idx) => <><div draggable="true" onDragStart={handleDrag} id={idx}>{effect}</div><span>{`=> `}</span></>)} {effects.length > 0 
-          ? <div> out</div>
-          : <span>&nbsp;</span>}
-        </div> */}
         <EffectsChain effects={effects} setEffects={setEffects}/>
         <div className="effects">
           {availableEffects.map((effect, idx) => {
