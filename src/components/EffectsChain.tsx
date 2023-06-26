@@ -1,4 +1,5 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React from 'react';
+import '../scss/effects-chain.scss';
 
 const EffectsChain = ({ effects, setEffects }) => {
 

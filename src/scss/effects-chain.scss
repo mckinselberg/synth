@@ -1,0 +1,24 @@
+.effects-chain {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50px;
+    div {
+      border: 1px solid white;
+      padding:3px;
+      margin: 10px;
+      border-radius: 5px;
+      cursor: grab;
+      transition: all 0.3s ease-in-out;
+      &:hover {
+        cursor: grab;
+        background-color: #333;
+      }
+      &:active {
+        cursor: grabbing;
+        background-color: #333;
+        opacity: 0.8;
+        transform: scale(1.2);
+      }
+    }
+  }

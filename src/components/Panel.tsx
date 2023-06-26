@@ -165,7 +165,7 @@ const Panel = () => {
       }),
       tremolo: new Tone.Tremolo(
         effectsWithParams.tremolo.frequency.value,
-        effectsWithParams.tremolo.depth.value
+        effectsWithParams.tremolo.depth.value,
       ),
       vibrato: new Tone.Vibrato(
         effectsWithParams.vibrato.frequency.value,
@@ -184,6 +184,10 @@ const Panel = () => {
     const appliedEffects = effects.map(effect => {
       return availableEffectsRef.current[effect];
     });
+
+    availableEffectsRef.current.tremolo.debug = true;
+
+    console.log(appliedEffects);
 
     polySynth.current.chain(
       ...appliedEffects,
@@ -223,6 +227,7 @@ const Panel = () => {
       }
     }
   }
+
   return (
     <div>
       <div className="synth-container">

@@ -1,0 +1,158 @@
+.effects {
+  padding-left: .25rem;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: left;
+  .effect {
+    flex-direction: column;
+    margin-top: 1%;
+    border: 1px solid grey;
+    border-radius: 5px;
+    min-width: 0;
+    padding: 1% 0 1% 0;
+    position: relative;
+    transition: all 0.3s ease-in-out;
+    &.closed {
+      height: 25px;
+      overflow: hidden;
+      .effect-params {
+        display: none;
+      }
+    }
+    display: flex;
+    flex-basis: calc(25% - 4px);
+    @media (max-width: 1023px) {
+      flex-basis: calc(33.3333% - 3px);
+    }
+    @media (max-width: 600px) {
+      flex-basis: calc(50% - 2px);
+    }
+    .effect-name {
+      padding-top:3px;
+      padding-left:10px;
+    }
+    label {
+      text-align: center ;
+      font-size: .9em;
+      --line: #505162;
+      --dot: #F7F8FF;
+      --circle: #9EA0BE;
+      --duration: .3s;
+      --text: #9EA0BE;
+      cursor: pointer;
+      input {
+        padding-top: 2%;
+        padding-bottom: 2%;
+        display: none;
+        & + div {
+          position: absolute;
+          right: 20px;
+          top: 10px;
+          &:before,
+          &:after {
+            --s: 1;
+            content: '';
+            position: absolute;
+            height: 4px;
+            top: 6px;
+            width: 24px;
+            background: var(--line);
+            transform: scaleX(var(--s));
+            transition: transform var(--duration) ease;
+            left: 14px;
+            transform-origin: 100% 50%;
+            border-radius: 0 2px 2px 0;
+          }
+          &:before {
+            --s: 0;
+            left: 0;
+            transform-origin: 0 50%;
+            border-radius: 2px 0 0 2px;
+          }
+          span {
+            padding-left: 56px;
+            color: var(--text);
+            &:before {
+              --x: 0;
+              --b: var(--circle);
+              --s: 4px;
+              content: '';
+              position: absolute;
+              left: 0;
+              top: 0;
+              width: 15px;
+              height: 15px;
+              border-radius: 50%;
+              box-shadow: inset 0 0 0 var(--s) var(--b); 
+              transform: translateX(var(--x));
+              transition: box-shadow var(--duration) ease, transform var(--duration) ease;
+            }
+            &:not(:empty) {
+              padding-left: 64px;
+            }
+          }
+        }
+        &:checked {
+          & + div {
+            &:before {
+              --s: 1;
+            }
+            &:after {
+              --s: 0;
+            }
+            span {
+              &:before {
+                --x: 28px;
+                --s: 12px;
+                --b: var(--dot);
+              }
+            }
+          }
+        }
+      }
+    }
+    .expander {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      top: 5px;
+      right: 5px;
+      cursor: pointer;
+      
+      svg {
+        rotate: 90deg;
+        transition: rotate 0.3s ease-in-out;
+        fill: #333;
+      }
+      &.expanded {
+        svg {
+          rotate: 270deg;
+        }
+      }
+      &:hover {
+        svg {
+          fill: #fff;
+        }
+      }
+    }
+    .slider {
+      display: flex;
+      flex-direction: column;
+      margin-left: 1%;
+      padding: 1.5%;
+      label {
+        width: 100%;
+        font-size: .75em;
+        text-align: center;
+      }
+      input {
+        width: 80%;
+        padding: 0;
+      }
+    }
+  }
+}

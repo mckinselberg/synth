@@ -11,7 +11,7 @@
   flex-wrap: wrap;
   .sliders {
     margin-top: 1%;
-    padding: .5em;
+    padding: .75em;
     display: flex;
     flex-direction: column;
     flex-basis: content;    
@@ -51,110 +51,4 @@
     padding: 0.75em 0 0 2em;
   }
   
-}
-
-.effects-container {
-  .effects-chain {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    div {
-      border: 1px solid white;
-      padding:3px;
-      margin: 10px;
-      border-radius: 5px;
-      cursor: grab;
-      transition: all 0.3s ease-in-out;
-      &:hover {
-        cursor: grab;
-        background-color: #333;
-      }
-      &:active {
-        cursor: grabbing;
-        background-color: #333;
-        opacity: 0.8;
-        transform: scale(1.2);
-      }
-    }
-  }
-  .effects {
-    padding-left: .25rem;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: left;
-    .effect {
-      flex-direction: column;
-      margin-top: 1%;
-      border: 1px solid grey;
-      border-radius: 5px;
-      min-width: 0;
-      padding: 1% 0 1% 0;
-      position: relative;
-      transition: all 0.3s ease-in-out;
-      &.closed {
-        height: 25px;
-        overflow: hidden;
-      }
-      display: flex;
-      flex-basis: calc(25% - 4px);
-      @media (max-width: 1023px) {
-        flex-basis: calc(33.3333% - 3px);
-      }
-      @media (max-width: 600px) {
-        flex-basis: calc(50% - 2px);
-      }
-      label {
-        text-align: center ;
-        font-size: .9em;
-      }
-      input {
-        padding-top: 2%;
-        padding-bottom: 2%;
-
-      }
-      .expander {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        position: absolute;
-        width: 10px;
-        height: 10px;
-        top: 5px;
-        right: 5px;
-        cursor: pointer;
-        
-        svg {
-          rotate: 90deg;
-          transition: rotate 0.3s ease-in-out;
-          fill: #333;
-        }
-        &.expanded {
-          svg {
-            rotate: 270deg;
-          }
-        }
-        &:hover {
-          svg {
-            fill: #fff;
-          }
-        }
-      }
-      .slider {
-        display: flex;
-        flex-direction: column;
-        margin-left: 1%;
-        padding: 1.5%;
-        label {
-          width: 100%;
-          font-size: .75em;
-          text-align: center;
-        }
-        input {
-          width: 80%;
-          padding: 0;
-        }
-      }
-    }
-  }
 }
