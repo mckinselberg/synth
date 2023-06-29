@@ -1,4 +1,4 @@
-export default SvgArrow = ({width, height}) => {
+const SvgArrow = ({width, height}) => {
   const scale = 1;
   return (
     <svg width={width * scale} height={height * scale}>
@@ -14,3 +14,5 @@ export default SvgArrow = ({width, height}) => {
     </svg>
   )
 }
+
+export default SvgArrow;
