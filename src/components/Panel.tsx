@@ -187,8 +187,6 @@ const Panel = () => {
 
     availableEffectsRef.current.tremolo.debug = true;
 
-    console.log(appliedEffects);
-
     polySynth.current.chain(
       ...appliedEffects,
       eq.current,
@@ -271,6 +269,8 @@ const Panel = () => {
         <div className="radio-buttons">
           <div className="synths">
               {Object.keys(synths).map((synth, idx) => {
+                console.log(synths);
+                console.log(synth);
                 return (
                   <div>
                     <label>
@@ -280,7 +280,7 @@ const Panel = () => {
                         type='radio'
                         key={`${synth}_${idx}`}
                         value={synth}
-                        checked={synth.toLowerCase() === activeSynth.current.name.toLowerCase() ? true : false}
+                        checked={synth.toLowerCase() === activeSynthName.toLowerCase() ? true : false}
                       />
                       {synth}
                     </label>

@@ -1,3 +1,5 @@
+import React from 'react';
+
 const SvgArrow = ({width, height}) => {
   const scale = 1;
   return (
