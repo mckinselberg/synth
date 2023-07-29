@@ -11,8 +11,8 @@ const SvgArrow = ({width, height}) => {
         </marker>
       </defs>
       <path d="M1,1 L7,4 L1,7"
-            stroke="black" stroke-width="0.5"
-            marker-end="url(#arrowhead)" />
+        stroke="black" strokeWidth="0.5"
+        markerEnd="url(#arrowhead)" />
     </svg>
   )
 }

@@ -3,7 +3,7 @@ import Slider from './Slider';
 import SvgArrow from './svg/SvgArrow';
 import '../scss/effects.scss';
 
-const Effect = ({ effect, handleEffectsChange, effectsWithParams, paramsUpdater, key, idx }) => {
+const Effect = ({ effect, handleEffectsChange, effectsWithParams, paramsUpdater }) => {
   const [open, setOpen] = useState(false);
   const handleExpandClick = () => {
     setOpen(!open);
@@ -24,7 +24,6 @@ const Effect = ({ effect, handleEffectsChange, effectsWithParams, paramsUpdater,
           id={effect}
           value={effect}
           onChange={handleEffectsChange}
-          key={key}
         />
         <div><span></span></div>
       </label>
@@ -36,6 +35,7 @@ const Effect = ({ effect, handleEffectsChange, effectsWithParams, paramsUpdater,
               handleChange={(e) => {
                 paramsUpdater(e, effect, param);
               }}
+              key={`${effect}_${param}`}
               value={value}
               step={effectsWithParams[param].step}
               name={param}

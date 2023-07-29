@@ -7,7 +7,7 @@ import { availableEffects, availableEffectsWithParams } from '../utils/available
 import "../scss/panel.scss";
 import EffectsChain from './EffectsChain';
 
-const debug = false;
+const debug: boolean = false;
 
 const keyCodesMap = new Map();
 keyCodesMap.set("z", "C4");
@@ -40,7 +40,7 @@ keyCodesMap.set("y", "D6");
 keyCodesMap.set("7", "D#6");
 keyCodesMap.set("u", "E6");
 
-const availableKeys = Array.from(keyCodesMap.keys());
+const availableKeys: Array<string> = Array.from(keyCodesMap.keys());
 
 const Panel = () => {
   const polySynth = useRef();
@@ -61,7 +61,7 @@ const Panel = () => {
   const [activeSynthName, setActiveSynthName] = useState(activeSynth.current.name);
   const handleChangeSynth = (e) => {
     activeSynth.current = synths[e.target.value];
-    setActiveSynthName(activeSynth.current.name);
+    setActiveSynthName(e.target.value);
   }
 
   const waveShapes = [
@@ -269,18 +269,15 @@ const Panel = () => {
         <div className="radio-buttons">
           <div className="synths">
               {Object.keys(synths).map((synth, idx) => {
-                console.log(synths);
-                console.log(synth);
                 return (
-                  <div>
+                  <div key={`${synth}_${idx}`}>
                     <label>
                       <input
                         name="synthRadioButtons"
                         onChange={handleChangeSynth}
                         type='radio'
-                        key={`${synth}_${idx}`}
                         value={synth}
-                        checked={synth.toLowerCase() === activeSynthName.toLowerCase() ? true : false}
+                        checked={synth.toLowerCase() === activeSynthName.toLowerCase().replace(' ', '') ? true : false}
                       />
                       {synth}
                     </label>
@@ -289,23 +286,23 @@ const Panel = () => {
               )}
           </div>
           <div className="wave-shapes">
-              {waveShapes.map((waveShape, idx) => {
-                return (
-                  <div>
-                    <label>
-                      <input
-                        name="waveShapeRadioButtons"
-                        onChange={handleWaveShapeChange}
-                        type='radio'
-                        key={`${waveShape}_${idx}`}
-                        value={waveShape}
-                        checked={waveShape === activeWaveShape ? true : false}
-                      />
-                      {waveShape}
-                    </label>
-                  </div>
-                )}
+            {waveShapes.map((waveShape, idx) => {
+              return (
+                <div>
+                  <label>
+                    <input
+                      name="waveShapeRadioButtons"
+                      onChange={handleWaveShapeChange}
+                      type='radio'
+                      key={`${waveShape}_${idx}`}
+                      value={waveShape}
+                      checked={waveShape === activeWaveShape ? true : false}
+                    />
+                    {waveShape}
+                  </label>
+                </div>
               )}
+            )}
           </div>
         </div>
         <div className="dropdowns">
