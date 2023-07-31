@@ -58,7 +58,7 @@ const Panel = () => {
 
 
   const activeSynth = useRef(synths.synth);
-  const [activeSynthName, setActiveSynthName] = useState(activeSynth.current.name);
+  const [activeSynthName, setActiveSynthName] = useState(Object.keys(synths)[0]);
   const handleChangeSynth = (e) => {
     activeSynth.current = synths[e.target.value];
     setActiveSynthName(e.target.value);
