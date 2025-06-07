@@ -44,6 +44,13 @@ const Panel: React.FC = () => {
   const [masterVolume, setMasterVolume] = useState(0);
   const [eqVals, setEqVals] = useState({ lowLevel: 0, midLevel: 0, highLevel: 0 });
   const [effectsWithParams, setEffectsWithParams] = useState(availableEffectsWithParams);
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+
+  // Apply theme to body
+  useEffect(() => {
+    document.body.classList.remove('theme-light', 'theme-dark');
+    document.body.classList.add(`theme-${theme}`);
+  }, [theme]);
 
   // Handlers
   const handleChangeSynth = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -184,6 +191,19 @@ const Panel: React.FC = () => {
 
   return (
     <div>
+      {/* Theme selector UI */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+        <label htmlFor="theme-select" style={{ marginRight: 8 }}>Theme:</label>
+        <select
+          id="theme-select"
+          value={theme}
+          onChange={e => setTheme(e.target.value as 'light' | 'dark')}
+          style={{ padding: '2px 8px', borderRadius: 4 }}
+        >
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+      </div>
       <div className="synth-container">
         <Synth polySynth={polySynth} keyCodesMap={keyCodesMap} availableKeys={availableKeys} />
       </div>

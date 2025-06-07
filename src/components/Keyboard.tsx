@@ -11,16 +11,18 @@ type KeyboardProps = {
   keyCodesMap: Map<string, string>;
 };
 
+type ActiveNotes = { [note: string]: boolean };
+
 const Keyboard: React.FC<KeyboardProps> = ({
   polySynth,
   availableKeys,
   keyCodesMap,
 }) => {
-  const activeNotesRef = useRef({});
-  const [_, forceUpdate] = useState(false); // Forcing re-render
+  // Use React state for active notes
+  const [activeNotes, setActiveNotes] = useState<ActiveNotes>({});
   const mouseDownRef = useRef(false);
 
-  // Visibility change effect moved here
+  // Visibility change effect
   useEffect(() => {
     const handleVisibility = () => {
       if (document.hidden) {
@@ -33,28 +35,39 @@ const Keyboard: React.FC<KeyboardProps> = ({
     return () => document.removeEventListener('visibilitychange', handleVisibility);
   }, []);
 
-  // Helper to force re-render
-  const rerender = useCallback(() => forceUpdate(f => !f), []);
+  // Helper to update active notes state
+  const setNoteActive = useCallback((note: string, isActive: boolean) => {
+    setActiveNotes(prev => {
+      if (prev[note] === isActive) return prev; // No unnecessary update
+      return { ...prev, [note]: isActive };
+    });
+  }, []);
 
-  const playNote = useCallback((e) => {
+  // Keyboard event handlers
+  const playNote = useCallback((e: KeyboardEvent) => {
     if (!availableKeys.some(key => key === e.key)) return;
     e.preventDefault();
     const note = keyCodesMap.get(e.key);
-    if (!activeNotesRef.current[note]) {
+    if (!note) return;
+    setActiveNotes(prev => {
+      if (prev[note]) return prev;
       polySynth.current?.triggerAttack?.(note);
-      activeNotesRef.current[note] = true;
-      if (!e.repeat) rerender();
-    }
-  }, [availableKeys, keyCodesMap, polySynth, rerender]);
+      return { ...prev, [note]: true };
+    });
+  }, [availableKeys, keyCodesMap, polySynth]);
 
-  const endNote = useCallback((e) => {
+  const endNote = useCallback((e: KeyboardEvent) => {
+    if (!availableKeys.some(key => key === e.key)) return;
     e.preventDefault();
     const note = keyCodesMap.get(e.key);
+    if (!note) return;
     const now = Tone.now();
-    polySynth.current?.triggerRelease?.(note, now);
-    activeNotesRef.current[note] = false;
-    rerender();
-  }, [keyCodesMap, polySynth, rerender]);
+    setActiveNotes(prev => {
+      if (!prev[note]) return prev;
+      polySynth.current?.triggerRelease?.(note, now);
+      return { ...prev, [note]: false };
+    });
+  }, [availableKeys, keyCodesMap, polySynth]);
 
   useEffect(() => {
     window.addEventListener('keydown', playNote);
@@ -66,68 +79,75 @@ const Keyboard: React.FC<KeyboardProps> = ({
   }, [playNote, endNote]);
 
   // Mouse and touch handlers
-  const handleMouseDown = useCallback((e, note) => {
+  const handleMouseDown = useCallback((e: React.MouseEvent, note: string) => {
     e.preventDefault();
     mouseDownRef.current = true;
-    if (!activeNotesRef.current[note]) {
-      polySynth.current?.triggerAttack?.(note);
-      activeNotesRef.current[note] = true;
-      rerender();
-    }
-  }, [polySynth, rerender]);
+    setNoteActive(note, true);
+    polySynth.current?.triggerAttack?.(note);
+  }, [polySynth, setNoteActive]);
 
-  const handleMouseUp = useCallback((e, note) => {
+  const handleMouseUp = useCallback((e: React.MouseEvent, note: string) => {
     e.preventDefault();
     mouseDownRef.current = false;
+    setNoteActive(note, false);
     const now = Tone.now();
     polySynth.current?.triggerRelease?.(note, now);
-    activeNotesRef.current[note] = false;
-    rerender();
-  }, [polySynth, rerender]);
+  }, [polySynth, setNoteActive]);
 
-  const handleMouseEnter = useCallback((e, note) => {
+  const handleMouseEnter = useCallback((e: React.MouseEvent, note: string) => {
     if (!mouseDownRef.current) return;
     e.preventDefault();
-    if (!activeNotesRef.current[note]) {
-      polySynth.current?.triggerAttack?.(note);
-      activeNotesRef.current[note] = true;
-      rerender();
-    }
-  }, [polySynth, rerender]);
+    setNoteActive(note, true);
+    polySynth.current?.triggerAttack?.(note);
+  }, [polySynth, setNoteActive]);
 
-  const handleMouseLeave = useCallback((e, note) => {
+  const handleMouseLeave = useCallback((e: React.MouseEvent, note: string) => {
     if (!mouseDownRef.current) return;
     e.preventDefault();
+    setNoteActive(note, false);
     const now = Tone.now();
     polySynth.current?.triggerRelease?.(note, now);
-    activeNotesRef.current[note] = false;
-    rerender();
-  }, [polySynth, rerender]);
+  }, [polySynth, setNoteActive]);
 
-  const handleTouchStart = useCallback((e, note) => {
+  const handleTouchStart = useCallback((e: React.TouchEvent, note: string) => {
     e.preventDefault();
-    if (!activeNotesRef.current[note]) {
-      polySynth.current?.triggerAttack?.(note);
-      activeNotesRef.current[note] = true;
-      rerender();
-    }
-  }, [polySynth, rerender]);
+    setNoteActive(note, true);
+    polySynth.current?.triggerAttack?.(note);
+  }, [polySynth, setNoteActive]);
 
-  const handleTouchEnd = useCallback((e, note) => {
+  const handleTouchEnd = useCallback((e: React.TouchEvent, note: string) => {
     e.preventDefault();
+    setNoteActive(note, false);
     const now = Tone.now();
     polySynth.current?.triggerRelease?.(note, now);
-    activeNotesRef.current[note] = false;
-    rerender();
-  }, [polySynth, rerender]);
+  }, [polySynth, setNoteActive]);
 
-  // Key component memoized for performance
-  const Key = React.memo(function Key({ note, keyboardKey, activeNotes }) {
+  // Key component memoized for performance and accessibility
+  const Key = React.memo(function Key({ note, keyboardKey, isActive }: { note: string, keyboardKey: string, isActive: boolean }) {
     const keyColor = useMemo(() => keyRegex.test(note) ? `black` : `white`, [note]);
     const sharpOrFlat = useMemo(() => noteRegex.test(note) ? ` no-margin` : ``, [note]);
-    const activeNote = activeNotes[note] ? ` active` : ``;
+    const activeNote = isActive ? ` active` : ``;
     const className = `key ${keyColor}${sharpOrFlat}${activeNote}`;
-    const keyRef = useRef(null);
+    const keyRef = useRef<HTMLDivElement>(null);
+
+    // Keyboard accessibility: handle space/enter to trigger notes
+    const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        setNoteActive(note, true);
+        polySynth.current?.triggerAttack?.(note);
+      }
+    }, [note, polySynth, setNoteActive]);
+
+    const handleKeyUp = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        setNoteActive(note, false);
+        const now = Tone.now();
+        polySynth.current?.triggerRelease?.(note, now);
+      }
+    }, [note, polySynth, setNoteActive]);
+
     return (
       <div
         key={note}
@@ -135,14 +155,21 @@ const Keyboard: React.FC<KeyboardProps> = ({
         className={className}
         data-note={note}
         ref={keyRef}
+        tabIndex={0} // Make focusable
+        role="button"
+        aria-pressed={isActive}
+        aria-label={`Piano key ${note} (${keyboardKey})`}
+        onKeyDown={handleKeyDown}
+        onKeyUp={handleKeyUp}
+        style={{ outline: 'none' }} // Remove default outline, rely on CSS for focus
       >
         <div
-          onMouseDown={(e) => handleMouseDown(e, note)}
-          onMouseUp={(e) => handleMouseUp(e, note)}
-          onTouchStart={(e) => handleTouchStart(e, note)}
-          onTouchEnd={(e) => handleTouchEnd(e, note)}
-          onMouseEnter={(e) => handleMouseEnter(e, note)}
-          onMouseLeave={(e) => handleMouseLeave(e, note)}
+          onMouseDown={e => handleMouseDown(e, note)}
+          onMouseUp={e => handleMouseUp(e, note)}
+          onTouchStart={e => handleTouchStart(e, note)}
+          onTouchEnd={e => handleTouchEnd(e, note)}
+          onMouseEnter={e => handleMouseEnter(e, note)}
+          onMouseLeave={e => handleMouseLeave(e, note)}
         >
           <p>
             <span>{note}</span>
@@ -163,7 +190,7 @@ const Keyboard: React.FC<KeyboardProps> = ({
           key={`${note}${keyboardKey}`}
           note={note}
           keyboardKey={keyboardKey}
-          activeNotes={activeNotesRef.current}
+          isActive={!!activeNotes[note]}
         />
       ))}
     </>
