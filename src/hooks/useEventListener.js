@@ -1,36 +1,25 @@
-// Hook
-import { useRef, useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
-export default function useEventListener(eventName, handler, element = window){
-  // Create a ref that stores handler
+export default function useEventListener(eventName, handler, element = window, options) {
   const savedHandler = useRef();
 
-  // Update ref.current value if handler changes.
-  // This allows our effect below to always get latest handler ...
-  // ... without us needing to pass it in effect deps array ...
-  // ... and potentially cause effect to re-run every render.
+  // Update ref if handler changes
   useEffect(() => {
     savedHandler.current = handler;
   }, [handler]);
 
-  useEffect(
-    () => {
-      // Make sure element supports addEventListener
-      // On 
-      const isSupported = element && element.addEventListener;
-      if (!isSupported) return;
+  useEffect(() => {
+    // Resolve element if it's a ref object
+    const target = element && element.current ? element.current : element;
 
-      // Create event listener that calls handler function stored in ref
-      const eventListener = event => savedHandler.current(event);
+    if (!(target && target.addEventListener)) return;
 
-      // Add event listener
-      element.addEventListener(eventName, eventListener, true);
+    const eventListener = event => savedHandler.current?.(event);
 
-      // Remove event listener on cleanup
-      return () => {
-        element.removeEventListener(eventName, eventListener);
-      };
-    },
-    [eventName, element] // Re-run if eventName or element changes
-  );
-};
+    target.addEventListener(eventName, eventListener, options || { passive: true });
+
+    return () => {
+      target.removeEventListener(eventName, eventListener, options || { passive: true });
+    };
+  }, [eventName, element, options]);
+}

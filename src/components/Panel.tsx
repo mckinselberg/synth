@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import * as Tone from 'tone';
 import Synth from "./Synth";
 import Slider from './Slider';
@@ -7,136 +7,112 @@ import { availableEffects, availableEffectsWithParams } from '../utils/available
 import "../scss/panel.scss";
 import EffectsChain from './EffectsChain';
 
-const debug: boolean = false;
+const debug = false;
 
-const keyCodesMap = new Map();
-keyCodesMap.set("z", "C4");
-keyCodesMap.set("s", "C#4");
-keyCodesMap.set("x", "D4");
-keyCodesMap.set("d", "D#4");
-keyCodesMap.set("c", "E4");
-keyCodesMap.set("v", "F4");
-keyCodesMap.set("g", "F#4");
-keyCodesMap.set("b", "G4");
-keyCodesMap.set("h", "G#4");
-keyCodesMap.set("n", "A4");
-keyCodesMap.set("j", "A#4");
-keyCodesMap.set("m", "B4");
-keyCodesMap.set(",", "C5");
-keyCodesMap.set("l", "C#5");
-keyCodesMap.set(".", "D5");
-keyCodesMap.set(";", "D#5");
-keyCodesMap.set("/", "E5");
-keyCodesMap.set("q", "F5");
-keyCodesMap.set("2", "F#5");
-keyCodesMap.set("w", "G5");
-keyCodesMap.set("3", "G#5");
-keyCodesMap.set("e", "A5");
-keyCodesMap.set("4", "A#5");
-keyCodesMap.set("r", "B5");
-keyCodesMap.set("t", "C6");
-keyCodesMap.set("6", "C#6");
-keyCodesMap.set("y", "D6");
-keyCodesMap.set("7", "D#6");
-keyCodesMap.set("u", "E6");
+const keyCodesMap = new Map([
+  ["z", "C4"], ["s", "C#4"], ["x", "D4"], ["d", "D#4"], ["c", "E4"], ["v", "F4"],
+  ["g", "F#4"], ["b", "G4"], ["h", "G#4"], ["n", "A4"], ["j", "A#4"], ["m", "B4"],
+  [",", "C5"], ["l", "C#5"], [".", "D5"], [";", "D#5"], ["/", "E5"], ["q", "F5"],
+  ["2", "F#5"], ["w", "G5"], ["3", "G#5"], ["e", "A5"], ["4", "A#5"], ["r", "B5"],
+  ["t", "C6"], ["6", "C#6"], ["y", "D6"], ["7", "D#6"], ["u", "E6"]
+]);
+const availableKeys = Array.from(keyCodesMap.keys());
 
-const availableKeys: Array<string> = Array.from(keyCodesMap.keys());
+const synths = {
+  synth: Tone.Synth,
+  amSynth: Tone.AMSynth,
+  fmSynth: Tone.FMSynth,
+  duoSynth: Tone.DuoSynth,
+  monoSynth: Tone.MonoSynth,
+  membraneSynth: Tone.MembraneSynth,
+  metalSynth: Tone.MetalSynth,
+};
 
-const Panel = () => {
-  const polySynth = useRef();
-  const synths = {
-    synth: Tone.Synth,
-    amSynth: Tone.AMSynth,
-    fmSynth: Tone.FMSynth,
-    duoSynth: Tone.DuoSynth,
-    monoSynth: Tone.MonoSynth,
-    // pluckSynth: Tone.PluckSynth,
-    membraneSynth: Tone.MembraneSynth,
-    metalSynth: Tone.MetalSynth,
-    // noiseSynth: Tone.NoiseSynth,
-  };
+const waveShapes = ['square', 'sine', 'sawtooth', 'triangle'];
 
+const Panel: React.FC = () => {
+  const polySynth = useRef<Tone.PolySynth | null>(null);
+  const eq = useRef<Tone.EQ3 | null>(null);
+  const availableEffectsRef = useRef<any>({});
+  const destination = useRef(Tone.Destination);
 
-  const activeSynth = useRef(synths.synth);
-  const [activeSynthName, setActiveSynthName] = useState(Object.keys(synths)[0]);
-  const handleChangeSynth = (e) => {
-    activeSynth.current = synths[e.target.value];
-    setActiveSynthName(e.target.value);
-  }
-
-  const waveShapes = [
-    'square',
-    'sine',
-    'sawtooth',
-    'triangle',
-  ];  
+  const [activeSynthName, setActiveSynthName] = useState<keyof typeof synths>('synth');
   const [activeWaveShape, setActiveWaveShape] = useState(waveShapes[0]);
-  const handleWaveShapeChange = (e) => {
-    setActiveWaveShape(e.target.value);
-  }
-
-  const availableEffectsRef = useRef();
-  const [effects, setEffects] = useState([]);
-  const handleEffectsChange = (e) => {
-    const tempEffects = [...effects]
-    if (e.target.checked) {
-      tempEffects.push(e.target.value);
-    } else {
-      tempEffects.splice(tempEffects.indexOf(e.target.value), 1);
-    }
-    setEffects(tempEffects);
-  }
-  
+  const [effects, setEffects] = useState<string[]>([]);
   const [attack, setAttack] = useState(0);
-  const handleAttackChange = (e) => {
-    setAttack(e.target.value);
-  }
-
   const [release, setRelease] = useState(0);
-  const handleReleaseChange = (e) => {
-    setRelease(e.target.value);
-  }
-
   const [masterVolume, setMasterVolume] = useState(0);
-  const handleMasterVolumeChange = (e) => {
-    setMasterVolume(e.target.value);
-  }
-
-  const eq = useRef();
-  const [eqVals, setEqVals] = useState({lowLevel: 0, midLevel: 0, highLevel: 0})
-  const handleEqChange = (e, band) => {
-    const tempEqVals = {...eqVals};
-    tempEqVals[`${band}Level`] = e.target.value;
-    setEqVals(tempEqVals);
-  }
-
-  const destination = useRef(Tone.Destination);  
-
+  const [eqVals, setEqVals] = useState({ lowLevel: 0, midLevel: 0, highLevel: 0 });
   const [effectsWithParams, setEffectsWithParams] = useState(availableEffectsWithParams);
-  const paramsUpdater = (e, effect, param) => {
-    const tempEffectsWithParams = {...effectsWithParams};
-    tempEffectsWithParams[effect][param].value = e.target.value;
-    setEffectsWithParams(tempEffectsWithParams);
-  }
 
+  // Handlers
+  const handleChangeSynth = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setActiveSynthName(e.target.value as keyof typeof synths);
+  }, []);
+
+  const handleWaveShapeChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setActiveWaveShape(e.target.value);
+  }, []);
+
+  const handleEffectsChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setEffects(prev =>
+      e.target.checked
+        ? [...prev, e.target.value]
+        : prev.filter(effect => effect !== e.target.value)
+    );
+  }, []);
+
+  const handleAttackChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setAttack(Number(e.target.value));
+  }, []);
+
+  const handleReleaseChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setRelease(Number(e.target.value));
+  }, []);
+
+  const handleMasterVolumeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setMasterVolume(Number(e.target.value));
+  }, []);
+
+  const handleEqChange = useCallback((e: React.ChangeEvent<HTMLInputElement>, band: string) => {
+    setEqVals(prev => ({
+      ...prev,
+      [`${band}Level`]: Number(e.target.value)
+    }));
+  }, []);
+
+  const paramsUpdater = useCallback((e: React.ChangeEvent<HTMLInputElement>, effect: string, param: string) => {
+    setEffectsWithParams(prev => ({
+      ...prev,
+      [effect]: {
+        ...prev[effect],
+        [param]: {
+          ...prev[effect][param],
+          value: Number(e.target.value)
+        }
+      }
+    }));
+  }, []);
+
+  // Memoize synth class
+  const SynthClass = useMemo(() => synths[activeSynthName], [activeSynthName]);
+
+  // Setup Tone.js synth/effects chain
   useEffect(() => {
-    polySynth.current = new Tone.PolySynth(activeSynth.current, {
-        oscillator: {
-          type: activeWaveShape,
-          phase: 0,
-        },
-        envelope: {
-          attack: attack,
-          release: release,
-        },
+    polySynth.current = new Tone.PolySynth(SynthClass, {
+      oscillator: { type: activeWaveShape, phase: 0 },
+      envelope: { attack, release },
     });
     polySynth.current.maxPolyphony = 10;
     polySynth.current.debug = debug;
+
     eq.current = new Tone.EQ3({
       low: eqVals.lowLevel,
       mid: eqVals.midLevel,
       high: eqVals.highLevel,
-    });    
+    });
+
+    // Effects setup
     availableEffectsRef.current = {
       chorus: new Tone.Chorus(
         effectsWithParams.chorus.frequency.value,
@@ -147,9 +123,6 @@ const Panel = () => {
         effectsWithParams.pingPong.delayTime.value,
         effectsWithParams.pingPong.maxDelay.value
       ),
-      // reverb: new Tone.Reverb(
-      //   effectsWithParams.reverb.decay.value,
-      // ),
       autoWah: new Tone.AutoWah(
         effectsWithParams.autoWah.baseFrequency.value,
         effectsWithParams.autoWah.octaves,
@@ -174,18 +147,13 @@ const Panel = () => {
       autoFilter: new Tone.AutoFilter(
         effectsWithParams.autoFilter.frequency.value,
       ).start(),
-    }
+    };
 
     availableEffectsRef.current.pingPong.wet.value = effectsWithParams.pingPong.wet.value;
-    // availableEffectsRef.current.reverb.wet.value = effectsWithParams.reverb.wet.value;
-    
     availableEffectsRef.current.autoWah.Q.value = effectsWithParams.autoWah.q.value;
-
-    const appliedEffects = effects.map(effect => {
-      return availableEffectsRef.current[effect];
-    });
-
     availableEffectsRef.current.tremolo.debug = true;
+
+    const appliedEffects = effects.map(effect => availableEffectsRef.current[effect]);
 
     polySynth.current.chain(
       ...appliedEffects,
@@ -194,44 +162,31 @@ const Panel = () => {
     );
 
     Tone.Destination.volume.value = masterVolume;
-    
+
     return () => {
-      appliedEffects.forEach(effect => {
-        effect.disconnect(polySynth.current);
-      });
-      Object.keys(availableEffectsRef.current).map(effect => {
-        availableEffectsRef.current[effect].dispose();
-      });
-      eq.current.dispose();
+      appliedEffects.forEach(effect => effect.disconnect(polySynth.current));
+      Object.values(availableEffectsRef.current).forEach((effect: any) => effect.dispose());
+      eq.current?.dispose();
       eq.current = null;
-      polySynth.current.dispose();
+      polySynth.current?.dispose();
       polySynth.current = null;
-    }
-  }, [activeSynthName, attack, release, activeWaveShape, effects, eqVals, effectsWithParams, masterVolume]);
-
-  const [toneStarted, setToneStarted] = useState(false);
-
-  const startTone = async () => {
-    if (!toneStarted) {
-      
-      try {
-        await Tone.start();
-        Tone.Transport.start();
-        setToneStarted(true);
-        alert('tone started');
-      } catch (e) {
-        console.log(e);
-        alert('tone failed to start');
-      }
-    }
-  }
+    };
+  }, [
+    SynthClass,
+    attack,
+    release,
+    activeWaveShape,
+    effects,
+    eqVals,
+    effectsWithParams,
+    masterVolume
+  ]);
 
   return (
     <div>
       <div className="synth-container">
-        <Synth polySynth={polySynth} keyCodesMap={keyCodesMap} availableKeys={availableKeys}/>
+        <Synth polySynth={polySynth} keyCodesMap={keyCodesMap} availableKeys={availableKeys} />
       </div>
-      {/* {!toneStarted && <button onClick={startTone}>Start Tone</button>} */}
       <div className="dropdowns-sliders-container">
         <div className="sliders">
           <Slider
@@ -239,10 +194,10 @@ const Panel = () => {
             value={masterVolume}
             step="1"
             name="Master Volume"
-            range={[-50,0]}
+            range={[-50, 0]}
           />
-          <Slider 
-            handleChange={handleAttackChange} 
+          <Slider
+            handleChange={handleAttackChange}
             value={attack}
             step="0.01"
             name="Attack"
@@ -253,94 +208,89 @@ const Panel = () => {
             step="0.01"
             name="Release"
           />
-          {['low', 'mid', 'high'].map((band, idx) => {
-            return (
-              <Slider
-                key={`${band}_${idx}`}
-                handleChange={(e) => handleEqChange(e, band)}
-                value={eqVals[`${band}Level`]}
-                step="0.01"
-                name={band}
-                range={[-20,20]}
-              />
-            )
-          })}
+          {['low', 'mid', 'high'].map((band, idx) => (
+            <Slider
+              key={`${band}_${idx}`}
+              handleChange={e => handleEqChange(e, band)}
+              value={eqVals[`${band}Level` as keyof typeof eqVals]}
+              step="0.01"
+              name={band}
+              range={[-20, 20]}
+            />
+          ))}
         </div>
         <div className="radio-buttons">
-          <div className="synths">
-              {Object.keys(synths).map((synth, idx) => {
-                return (
-                  <div key={`${synth}_${idx}`}>
-                    <label>
-                      <input
-                        name="synthRadioButtons"
-                        onChange={handleChangeSynth}
-                        type='radio'
-                        value={synth}
-                        checked={synth.toLowerCase() === activeSynthName.toLowerCase().replace(' ', '') ? true : false}
-                      />
-                      {synth}
-                    </label>
-                  </div>
-                )}
-              )}
-          </div>
-          <div className="wave-shapes">
-            {waveShapes.map((waveShape, idx) => {
-              return (
-                <div>
-                  <label>
-                    <input
-                      name="waveShapeRadioButtons"
-                      onChange={handleWaveShapeChange}
-                      type='radio'
-                      key={`${waveShape}_${idx}`}
-                      value={waveShape}
-                      checked={waveShape === activeWaveShape ? true : false}
-                    />
-                    {waveShape}
-                  </label>
-                </div>
-              )}
-            )}
-          </div>
+          <fieldset className="synths">
+            <legend>Synths</legend>
+            {Object.keys(synths).map((synth, idx) => (
+              <label key={`${synth}_${idx}`}>
+                <input
+                  name="synthRadioButtons"
+                  onChange={handleChangeSynth}
+                  type="radio"
+                  value={synth}
+                  checked={synth === activeSynthName}
+                />
+                {synth}
+              </label>
+            ))}
+          </fieldset>
+          <fieldset className="wave-shapes">
+            <legend>Wave Shapes</legend>
+            {waveShapes.map((waveShape, idx) => (
+              <label key={`${waveShape}_${idx}`}>
+                <input
+                  name="waveShapeRadioButtons"
+                  onChange={handleWaveShapeChange}
+                  type="radio"
+                  value={waveShape}
+                  checked={waveShape === activeWaveShape}
+                />
+                {waveShape}
+              </label>
+            ))}
+          </fieldset>
         </div>
         <div className="dropdowns">
           <div className="synths">
-            <select onChange={handleChangeSynth}>
-              {Object.keys(synths).map((synth, idx) => {
-                return (<option key={`${synth}_${idx}`} value={(synth)}>{synth}</option>)}
-              )}
-            </select>
+            <label>
+              Synth
+              <select onChange={handleChangeSynth} value={activeSynthName}>
+                {Object.keys(synths).map((synth, idx) => (
+                  <option key={`${synth}_${idx}`} value={synth}>{synth}</option>
+                ))}
+              </select>
+            </label>
           </div>
           <div className="wave-shapes">
-            <select onChange={handleWaveShapeChange}>
-              {waveShapes.map((waveShape, idx) => {
-                return <option key={`${waveShape}_${idx}`}>{waveShape}</option>
-              })}
-            </select>
+            <label>
+              Wave Shape
+              <select onChange={handleWaveShapeChange} value={activeWaveShape}>
+                {waveShapes.map((waveShape, idx) => (
+                  <option key={`${waveShape}_${idx}`} value={waveShape}>{waveShape}</option>
+                ))}
+              </select>
+            </label>
           </div>
         </div>
       </div>
       <div className="effects-container">
-        <EffectsChain effects={effects} setEffects={setEffects}/>
+        <EffectsChain effects={effects} setEffects={setEffects} />
         <div className="effects">
-          {availableEffects.map((effect, idx) => {
-            return (
-              <Effect 
-                key={`${effect}_${idx}`}
-                effect={effect}
-                idx={idx}
-                handleEffectsChange={handleEffectsChange}
-                effectsWithParams={effectsWithParams[effect]}
-                paramsUpdater={paramsUpdater}
-              />
-            )}
-          )}
+          {availableEffects.map((effect, idx) => (
+            <Effect
+              key={`${effect}_${idx}`}
+              effect={effect}
+              idx={idx}
+              handleEffectsChange={handleEffectsChange}
+              effectsWithParams={effectsWithParams[effect]}
+              paramsUpdater={paramsUpdater}
+            />
+          ))}
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 export default Panel;

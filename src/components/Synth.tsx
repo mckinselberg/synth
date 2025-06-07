@@ -1,17 +1,15 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import Keyboard from './Keyboard';
 import "../scss/synth.scss";
 
-const Synth = ({polySynth, keyCodesMap, availableKeys}) => {
-
-  const handleMouseleave = () => {
-    polySynth.current.releaseAll();
-  }
+const Synth = ({ polySynth, keyCodesMap, availableKeys }) => {
+  // useCallback prevents unnecessary recreation of the function
+  const handleMouseLeave = useCallback(() => {
+    polySynth.current?.releaseAll?.();
+  }, [polySynth]);
 
   return (
-    <div id="synth"
-      onMouseLeave={handleMouseleave}
-    >
+    <div id="synth" onMouseLeave={handleMouseLeave}>
       <Keyboard
         keyCodesMap={keyCodesMap}
         availableKeys={availableKeys}
@@ -19,6 +17,6 @@ const Synth = ({polySynth, keyCodesMap, availableKeys}) => {
       />
     </div>
   );
-}
+};
 
 export default Synth;

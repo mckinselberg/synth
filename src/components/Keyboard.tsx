@@ -1,61 +1,60 @@
-import React, { useMemo, useState, useEffect, useRef } from 'react';
+import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import * as Tone from 'tone';
 import "../scss/keyboard.scss";
 
 const keyRegex = /([#])/;
 const noteRegex = /(C\B)|(F\B)/;
 
-interface IKeyProps {
-  note: string,
-  keyboardKey: string,
-  activeNotes: object,
-}
+type KeyboardProps = {
+  polySynth: React.MutableRefObject<any>;
+  availableKeys: string[];
+  keyCodesMap: Map<string, string>;
+};
 
-// interface IKeyCodeMap {
-//   [key: string]: string
-// }
-
-// disable Tone context when window is not focused
-document.addEventListener('visibilitychange', () => {
-  if (document.hidden) {
-    Tone.Transport.pause();
-  } else {
-    Tone.Transport.start();
-  }
-});
-
-const Keyboard = ({
+const Keyboard: React.FC<KeyboardProps> = ({
   polySynth,
   availableKeys,
   keyCodesMap,
 }) => {
   const activeNotesRef = useRef({});
-  const [forceRender, setForceRender] = useState(false);
+  const [_, forceUpdate] = useState(false); // Forcing re-render
   const mouseDownRef = useRef(false);
 
-  const playNote = (e) => {
-    e.preventDefault();
-    if (!availableKeys.some(key => key === e.key)) {
-      return;
-    } else {
-      e.preventDefault();
-    }
+  // Visibility change effect moved here
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.hidden) {
+        Tone.Transport.pause();
+      } else {
+        Tone.Transport.start();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, []);
 
-    if (!activeNotesRef.current[keyCodesMap.get(e.key)]) {
-      polySynth.current.triggerAttack(keyCodesMap.get(e.key));
-      activeNotesRef.current[keyCodesMap.get(e.key)] = true;
-      if (e.repeat) return;
-      setForceRender(!forceRender);
-    }
-  }
+  // Helper to force re-render
+  const rerender = useCallback(() => forceUpdate(f => !f), []);
 
-  const endNote = (e) => {
+  const playNote = useCallback((e) => {
+    if (!availableKeys.some(key => key === e.key)) return;
     e.preventDefault();
+    const note = keyCodesMap.get(e.key);
+    if (!activeNotesRef.current[note]) {
+      polySynth.current?.triggerAttack?.(note);
+      activeNotesRef.current[note] = true;
+      if (!e.repeat) rerender();
+    }
+  }, [availableKeys, keyCodesMap, polySynth, rerender]);
+
+  const endNote = useCallback((e) => {
+    e.preventDefault();
+    const note = keyCodesMap.get(e.key);
     const now = Tone.now();
-    polySynth.current.triggerRelease(keyCodesMap.get(e.key), now);
-    activeNotesRef.current[keyCodesMap.get(e.key)] = false;
-    setForceRender(!forceRender);
-  }
+    polySynth.current?.triggerRelease?.(note, now);
+    activeNotesRef.current[note] = false;
+    rerender();
+  }, [keyCodesMap, polySynth, rerender]);
 
   useEffect(() => {
     window.addEventListener('keydown', playNote);
@@ -63,78 +62,80 @@ const Keyboard = ({
     return () => {
       window.removeEventListener('keydown', playNote);
       window.removeEventListener('keyup', endNote);
-    }
-  });
-  
-  const handleMouseDown = (e, note) => {
+    };
+  }, [playNote, endNote]);
+
+  // Mouse and touch handlers
+  const handleMouseDown = useCallback((e, note) => {
     e.preventDefault();
     mouseDownRef.current = true;
     if (!activeNotesRef.current[note]) {
-      polySynth.current.triggerAttack(note);
+      polySynth.current?.triggerAttack?.(note);
       activeNotesRef.current[note] = true;
-      setForceRender(!forceRender);
+      rerender();
     }
-  }
+  }, [polySynth, rerender]);
 
-  const handleMouseUp = (e, note) => {
+  const handleMouseUp = useCallback((e, note) => {
     e.preventDefault();
     mouseDownRef.current = false;
     const now = Tone.now();
-    polySynth.current.triggerRelease(note, now);
+    polySynth.current?.triggerRelease?.(note, now);
     activeNotesRef.current[note] = false;
-    setForceRender(!forceRender);
-  }
+    rerender();
+  }, [polySynth, rerender]);
 
-  const handleMouseEnter = (e, note) => {
+  const handleMouseEnter = useCallback((e, note) => {
     if (!mouseDownRef.current) return;
     e.preventDefault();
     if (!activeNotesRef.current[note]) {
-      polySynth.current.triggerAttack(note);
+      polySynth.current?.triggerAttack?.(note);
       activeNotesRef.current[note] = true;
-      setForceRender(!forceRender);
+      rerender();
     }
-  }
+  }, [polySynth, rerender]);
 
-  const handleMouseLeave = (e, note) => {
+  const handleMouseLeave = useCallback((e, note) => {
     if (!mouseDownRef.current) return;
     e.preventDefault();
     const now = Tone.now();
-    polySynth.current.triggerRelease(note, now);
+    polySynth.current?.triggerRelease?.(note, now);
     activeNotesRef.current[note] = false;
-    setForceRender(!forceRender);
-  }
+    rerender();
+  }, [polySynth, rerender]);
 
-  const handleTouchStart = (e, note) => {
+  const handleTouchStart = useCallback((e, note) => {
     e.preventDefault();
     if (!activeNotesRef.current[note]) {
-      polySynth.current.triggerAttack(note);
+      polySynth.current?.triggerAttack?.(note);
       activeNotesRef.current[note] = true;
-      setForceRender(!forceRender);
+      rerender();
     }
-  }
+  }, [polySynth, rerender]);
 
-  const handleTouchEnd = (e, note) => {
+  const handleTouchEnd = useCallback((e, note) => {
     e.preventDefault();
     const now = Tone.now();
-    polySynth.current.triggerRelease(note, now);
+    polySynth.current?.triggerRelease?.(note, now);
     activeNotesRef.current[note] = false;
-    setForceRender(!forceRender);
-  }
+    rerender();
+  }, [polySynth, rerender]);
 
-  const Key = ({note, keyboardKey, activeNotes}: IKeyProps ) => {
-    const keyColor = useMemo(() => keyRegex.test(note) ? `black` : `white`);
-    const sharpOrFlat = useMemo(() => noteRegex.test(note) ? ` no-margin` : ``);
+  // Key component memoized for performance
+  const Key = React.memo(function Key({ note, keyboardKey, activeNotes }) {
+    const keyColor = useMemo(() => keyRegex.test(note) ? `black` : `white`, [note]);
+    const sharpOrFlat = useMemo(() => noteRegex.test(note) ? ` no-margin` : ``, [note]);
     const activeNote = activeNotes[note] ? ` active` : ``;
     const className = `key ${keyColor}${sharpOrFlat}${activeNote}`;
     const keyRef = useRef(null);
     return (
-      <div 
+      <div
         key={note}
         data-key={note}
         className={className}
         data-note={note}
         ref={keyRef}
-        >
+      >
         <div
           onMouseDown={(e) => handleMouseDown(e, note)}
           onMouseUp={(e) => handleMouseUp(e, note)}
@@ -145,7 +146,7 @@ const Keyboard = ({
         >
           <p>
             <span>{note}</span>
-            <br/>
+            <br />
             <span>
               ({keyboardKey})
             </span>
@@ -153,24 +154,20 @@ const Keyboard = ({
         </div>
       </div>
     );
-  }
+  });
 
   return (
     <>
-      {Array.from(keyCodesMap).map((keyCode: React.JSX.Element) => {
-        const note = keyCode[1];
-        const keyboardKey = keyCode[0];
-        return (
-          <Key 
-            key={`${note}${keyboardKey}`}
-            note={note}
-            keyboardKey={keyboardKey}
-            activeNotes={activeNotesRef.current}
-          />
-        );
-      })}
+      {(Array.from(keyCodesMap) as [string, string][]).map(([keyboardKey, note]) => (
+        <Key
+          key={`${note}${keyboardKey}`}
+          note={note}
+          keyboardKey={keyboardKey}
+          activeNotes={activeNotesRef.current}
+        />
+      ))}
     </>
   );
-}
+};
 
 export default Keyboard;
