@@ -1,6 +1,6 @@
 # synth
 
-A synth created using Parcel, React, &amp; Tone.js.
+A synth created using Vite, React (rendered via Preact), &amp; Tone.js.
 
 # demo
 

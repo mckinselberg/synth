@@ -1,4 +1,7 @@
 // box-shadow: rgba(240, 46, 170, 0.4) 0px 5px, rgba(240, 46, 170, 0.3) 0px 10px, rgba(240, 46, 170, 0.2) 0px 15px, rgba(240, 46, 170, 0.1) 0px 20px, rgba(240, 46, 170, 0.05) 0px 25px;
+@use "sass:list";
+@use "sass:string";
+
 @mixin customBoxShadow {
   $color: rgba(240, 46, 170, 0.4);
   $offsets: 5px 10px 15px 20px 25px;
@@ -6,10 +9,10 @@
 
   $boxShadow: ();
 
-  @for $i from 1 through length($offsets) {
-    $offset: nth($offsets, $i);
-    $opacity: nth($opacities, $i);
-    $boxShadow: append($boxShadow, unquote("rgba(240, 46, 170, #{$opacity}) 0px #{$offset}"), comma);
+  @for $i from 1 through list.length($offsets) {
+    $offset: list.nth($offsets, $i);
+    $opacity: list.nth($opacities, $i);
+    $boxShadow: list.append($boxShadow, string.unquote("rgba(240, 46, 170, #{$opacity}) 0px #{$offset}"), comma);
   }
 
   box-shadow: $boxShadow;
